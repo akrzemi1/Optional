@@ -1,4 +1,5 @@
 Optional
 ========
 
-optional (nullable) objects for C++11
+A library for optional (nullable) objects for C++11. The interface is based on Fernando Cacciola's Boost.Optional library (http://www.boost.org/doc/libs/1_52_0/libs/optional/doc/html/index.html)
+
