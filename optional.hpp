@@ -352,28 +352,36 @@ public:
 	  return *this;
 	}
 	
-	// 20.5.4.4 Swap
-	void swap(optional<T>& rhs) noexcept(is_nothrow_move_constructible<T>::value && noexcept(swap(declval<T&>(), declval<T&>())))
-	{
-	  if      (initialized() == true  && rhs.initialized() == false) { rhs.initialize(std::move(**this)); clear(); }
-	  else if (initialized() == false && rhs.initialized() == true)  { initialize(std::move(*rhs)); rhs.clear(); }
-	  else if (initialized() == true  && rhs.initialized() == true)  { using std::swap; swap(**this, *rhs); }
-	}
+  // 20.5.4.4 Swap
+  void swap(optional<T>& rhs) noexcept(is_nothrow_move_constructible<T>::value && noexcept(swap(declval<T&>(), declval<T&>())))
+  {
+    if      (initialized() == true  && rhs.initialized() == false) { rhs.initialize(std::move(**this)); clear(); }
+    else if (initialized() == false && rhs.initialized() == true)  { initialize(std::move(*rhs)); rhs.clear(); }
+    else if (initialized() == true  && rhs.initialized() == true)  { using std::swap; swap(**this, *rhs); }
+  }
 
   // 20.5.4.5 Observers 
-	T const* operator ->() const { 
-	  assert (initialized()); 
-	  return dataptr(); 
-	}
+  T const* operator ->() const { 
+    #ifdef NDEBUG
+    return dataptr();
+    #else
+    return (initialized() ? dataptr() : (_assert("initialized()", __FILE__, __LINE__), dataptr()));
+    #endif
+    // return assert(initialized()), dataptr(); 
+  }
 	
   T* operator ->() { 
     assert (initialized()); 
     return dataptr(); 
   }
   
-  T const& operator *() const { 
-    assert (initialized()); 
+  constexpr T const& operator *() const { 
+    #ifdef NDEBUG
     return *dataptr();
+    #else
+    return (initialized() ? *dataptr() : (_assert("initialized()", __FILE__, __LINE__), *dataptr()));
+    #endif
+    // return assert(initialized()), *dataptr();
   }
   
   T& operator *() { 
@@ -381,7 +389,7 @@ public:
     return *dataptr(); 
   }
   
-	constexpr explicit operator bool() const noexcept { return initialized(); }	
+  constexpr explicit operator bool() const noexcept { return initialized(); }	
 };
 
 
