@@ -615,6 +615,7 @@ static_assert( !g1, "initialized!" );
 
 constexpr tr2::optional<int> g2{2};
 static_assert( g2, "not initialized!" );
+static_assert( *g2 == 2, "not 2!" );
 
 
 #include <string>
