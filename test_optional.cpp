@@ -22,7 +22,7 @@ struct caller {
 # define CAT(X, Y) CAT2(X, Y)
 # define TEST(NAME) caller CAT(__VAR, __LINE__) = []
 
-enum State 
+enum  State 
 {
     sDefaultConstructed,
     sValueCopyConstructed,
