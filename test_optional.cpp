@@ -649,7 +649,7 @@ int main() {
 
     VEC v = {5, 6};
 
-    std::cout << v.v.size() << std::endl;
+    std::cout << 4 << std::endl;
     
   // type optional<string> is deduced
   //tr2::optional<std::vector<int>> ov2 = {2, 3};
