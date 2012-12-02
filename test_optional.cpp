@@ -621,10 +621,17 @@ constexpr tr2::optional<int> g0{};
 constexpr tr2::optional<int> g1{tr2::nullopt};
 static_assert( !g0, "initialized!" );
 static_assert( !g1, "initialized!" );
+static_assert( g1 == g0, "ne!" );
+static_assert( bool(g1) == bool(g0), "ne!" );
 
 constexpr tr2::optional<int> g2{2};
 static_assert( g2, "not initialized!" );
 static_assert( *g2 == 2, "not 2!" );
+static_assert( g2 == tr2::make_optional(2), "not 2!" );
+static_assert( g2 != g0, "eq!" );
+
+
+// end constexpr tests
 
 
 #include <string>
