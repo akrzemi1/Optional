@@ -194,6 +194,67 @@ TEST(assignment)
 };
 
 
+template <class T>
+struct MoveAware
+{
+  T val;
+  bool moved;
+  MoveAware(T val) : val(val), moved(false) {}
+  MoveAware(MoveAware const&) = delete;
+  MoveAware(MoveAware&& rhs) : val(rhs.val), moved(rhs.moved) {
+    rhs.moved = true;
+  }
+  MoveAware& operator=(MoveAware const&) = delete;
+  MoveAware& operator=(MoveAware&& rhs) {
+    val = (rhs.val);
+    moved = (rhs.moved);
+    rhs.moved = true;
+    return *this;
+  }
+};
+
+TEST(moved_from_state)
+{
+  // first, test mock:
+  MoveAware<int> i{1}, j{2};
+  assert (i.val == 1);
+  assert (!i.moved);
+  assert (j.val == 2);
+  assert (!j.moved);
+  
+  MoveAware<int> k = std::move(i);
+  assert (k.val == 1);
+  assert (!k.moved);
+  assert (i.val == 1);
+  assert (i.moved);
+  
+  k = std::move(j);
+  assert (k.val == 2);
+  assert (!k.moved);
+  assert (j.val == 2);
+  assert (j.moved);
+  
+  // now, test optional
+  tr2::optional<MoveAware<int>> oi{1}, oj{2};
+  assert (oi);
+  assert (!oi->moved);
+  assert (oj);
+  assert (!oj->moved);
+  
+  tr2::optional<MoveAware<int>> ok = std::move(oi);
+  assert (ok);
+  assert (!ok->moved);
+  assert (oi);
+  assert (oi->moved);
+  
+  ok = std::move(oj);
+  assert (ok);
+  assert (!ok->moved);
+  assert (oj);
+  assert (oj->moved);
+};
+
+
 TEST(copy_move_ctor_optional_int)
 {
   tr2::optional<int> oi;
@@ -615,15 +676,91 @@ TEST(optional_initialization)
 };
 
 
-// constexpr tests
+//// constexpr tests
+
+// these 4 classes have different noexcept signatures in move operations
+struct NothrowBoth {
+  NothrowBoth(NothrowBoth&&) noexcept(true) {};
+  void operator=(NothrowBoth&&) noexcept(true) {};
+};
+struct NothrowCtor {
+  NothrowCtor(NothrowCtor&&) noexcept(true) {};
+  void operator=(NothrowCtor&&) noexcept(false) {};
+};
+struct NothrowAssign {
+  NothrowAssign(NothrowAssign&&) noexcept(false) {};
+  void operator=(NothrowAssign&&) noexcept(true) {};
+};
+struct NothrowNone {
+  NothrowNone(NothrowNone&&) noexcept(false) {};
+  void operator=(NothrowNone&&) noexcept(false) {};
+};
+
+void test_noexcept()
+{
+  {
+    tr2::optional<NothrowBoth> b1, b2;
+    static_assert(noexcept(tr2::optional<NothrowBoth>{std::move(b1)}), "bad noexcept!");
+    static_assert(noexcept(b1 = std::move(b2)), "bad noexcept!");
+  }
+  {
+    tr2::optional<NothrowCtor> c1, c2;
+    static_assert(noexcept(tr2::optional<NothrowCtor>{std::move(c1)}), "bad noexcept!");
+    static_assert(!noexcept(c1 = std::move(c2)), "bad noexcept!");
+  }
+  {
+    tr2::optional<NothrowAssign> a1, a2;
+    static_assert(!noexcept(tr2::optional<NothrowAssign>{std::move(a1)}), "bad noexcept!");
+    static_assert(!noexcept(a1 = std::move(a2)), "bad noexcept!");
+  }
+  {
+    tr2::optional<NothrowNone> n1, n2;
+    static_assert(!noexcept(tr2::optional<NothrowNone>{std::move(n1)}), "bad noexcept!");
+    static_assert(!noexcept(n1 = std::move(n2)), "bad noexcept!");
+  }
+}
+
+
+void constexpr_test_disengaged()
+{
+  constexpr tr2::optional<int> g0{};
+  constexpr tr2::optional<int> g1{tr2::nullopt};
+  static_assert( !g0, "initialized!" );
+  static_assert( !g1, "initialized!" );
+  
+  static_assert( bool(g1) == bool(g0), "ne!" );
+  
+  static_assert( g1 == g0, "ne!" );
+  static_assert( !(g1 != g0), "ne!" );
+  static_assert( g1 >= g0, "ne!" );
+  static_assert( !(g1 > g0), "ne!" );
+  static_assert( g1 <= g0, "ne!" );
+  static_assert( !(g1 <g0), "ne!" );
+  
+  static_assert( g1 == tr2::nullopt, "!" );
+  static_assert( !(g1 != tr2::nullopt), "!" );
+  static_assert( g1 <= tr2::nullopt, "!" );
+  static_assert( !(g1 < tr2::nullopt), "!" );
+  static_assert( g1 >= tr2::nullopt, "!" );
+  static_assert( !(g1 > tr2::nullopt), "!" );
+  
+  static_assert(  (tr2::nullopt == g0), "!" );
+  static_assert( !(tr2::nullopt != g0), "!" );
+  static_assert(  (tr2::nullopt >= g0), "!" );
+  static_assert( !(tr2::nullopt >  g0), "!" );
+  static_assert(  (tr2::nullopt <= g0), "!" );
+  static_assert( !(tr2::nullopt <  g0), "!" );
+  
+  static_assert(  (g1 != tr2::make_optional(1)), "!" );
+  static_assert( !(g1 == tr2::make_optional(1)), "!" );
+  static_assert(  (g1 <  tr2::make_optional(1)), "!" );
+  static_assert(  (g1 <= tr2::make_optional(1)), "!" );
+  static_assert( !(g1 >  tr2::make_optional(1)), "!" );
+  static_assert( !(g1 >  tr2::make_optional(1)), "!" );
+}
+
 
 constexpr tr2::optional<int> g0{};
-constexpr tr2::optional<int> g1{tr2::nullopt};
-static_assert( !g0, "initialized!" );
-static_assert( !g1, "initialized!" );
-static_assert( g1 == g0, "ne!" );
-static_assert( bool(g1) == bool(g0), "ne!" );
-
 constexpr tr2::optional<int> g2{2};
 static_assert( g2, "not initialized!" );
 static_assert( *g2 == 2, "not 2!" );
