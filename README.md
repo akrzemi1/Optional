@@ -8,3 +8,9 @@ Supported compilers
 -------------------
 
 G++ 4.7.2 (and probably later)
+
+
+Usage
+-----
+
+For usage examples and the overview see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3406.html
