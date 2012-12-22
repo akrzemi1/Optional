@@ -676,6 +676,37 @@ TEST(optional_initialization)
 };
 
 
+#include <unordered_set>
+
+TEST(optional_hashing)
+{
+    using namespace tr2;
+    using std::string;
+    
+    std::hash<int> hi;
+    std::hash<optional<int>> hoi;
+    std::hash<string> hs;
+    std::hash<optional<string>> hos;
+    
+    assert (hi(0) == hoi(optional<int>{0}));
+    assert (hi(1) == hoi(optional<int>{1}));
+    assert (hi(3198) == hoi(optional<int>{3198}));
+    
+    assert (hs("") == hos(optional<string>{""}));
+    assert (hs("0") == hos(optional<string>{"0"}));
+    assert (hs("Qa1#") == hos(optional<string>{"Qa1#"}));
+    
+    std::unordered_set<optional<string>> set;
+    assert(set.find({"Qa1#"}) == set.end());
+    
+    set.insert({"0"});
+    assert(set.find({"Qa1#"}) == set.end());
+    
+    set.insert({"Qa1#"});
+    assert(set.find({"Qa1#"}) != set.end());
+};
+
+
 //// constexpr tests
 
 // these 4 classes have different noexcept signatures in move operations
