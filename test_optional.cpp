@@ -351,6 +351,7 @@ TEST(example_guard)
 
 void process(){}
 void process(int ){}
+void processNil(){}
 
 
 TEST(example1)
@@ -381,20 +382,38 @@ TEST(example1)
   assert(ol < ok);                  // less by contained value
   
   /////////////////////////////////////////////////////////////////////////////
+  optional<int> om{1};              // om is engaged; its contained value is 1
+  optional<int> on = om;            // on is engaged; its contained value is 1
+  om = 2;                           // om is engaged; its contained value is 2
+  assert (on != om);                // on still contains 3. They are not pointers
+
+  /////////////////////////////////////////////////////////////////////////////
   int i = *ol;                      // i obtains the value contained in ol
   assert (i == 1);
   *ol = 9;                          // the object contained in ol becomes 9
   assert(*ol == 9);
   assert(ol == make_optional(9));  
   
+  ///////////////////////////////////
+  int p = 1;
+  optional<int> op = p;
+  assert(*op == 1);
+  p = 2;                         
+  assert(*op == 1);                 // value contained in op is separated from p
+
   ////////////////////////////////
   if (ol)                      
     process(*ol);                   // use contained value if present
   else
     process();                      // proceed without contained value
+    
+  if (!om)   
+    processNil();
+  else  
+    process(*om);   
   
   /////////////////////////////////////////
-  process(get_value_or(ol, 0));     // use 0 if ol is disengaged
+  process(value_or(ol, 0));     // use 0 if ol is disengaged
   
   ////////////////////////////////////////////
   ok = nullopt;                         // if ok was engaged calls T's dtor
@@ -491,6 +510,24 @@ void assign_norebind(tr2::optional<T&>& optref, T& obj)
   else        optref.emplace(obj);
 }
 
+
+
+TEST(example_conceptual_model)
+{
+  using namespace std::experimental;
+  
+  optional<int> oi = 0;
+  optional<int> oj = 1;
+  optional<int> ok = nullopt;
+
+  oi = 1;
+  oj = nullopt;
+  ok = 0;
+
+  oi == nullopt;
+  oj == 0;
+  ok == 1;
+};
 
 TEST(example_rationale)
 {
@@ -599,6 +636,21 @@ TEST(example_rationale)
 };
 
 
+bool fun(std::string s, std::experimental::optional<int> oi = std::experimental::nullopt) 
+{
+  return bool(oi);
+}
+
+TEST(example_converting_ctor)
+{
+  using namespace std::experimental;
+  
+  assert (true == fun("dog", 2));
+  assert (false == fun("dog"));
+  assert (false == fun("dog", nullopt)); // just to be explicit
+};
+
+
 TEST(bad_comparison)
 {
   tr2::optional<int> oi, oj;
@@ -620,19 +672,177 @@ TEST(bad_comparison)
 ////  assert (oes->s == "OS");
 ////};
 
-TEST(get_value_or)
+TEST(value_or)
 {
   tr2::optional<int> oi = 1;
-  int i = get_value_or(oi, 0);
+  int i = value_or(oi, 0);
   assert (i == 1);
   
   oi = tr2::nullopt;
-  assert (get_value_or(oi, 3) == 3);
+  assert (value_or(oi, 3) == 3);
   
   tr2::optional<std::string> os{"AAA"};
-  assert (get_value_or(os, "BBB") == "AAA");
+  assert (value_or(os, "BBB") == "AAA");
   os = {};
-  assert (get_value_or(os, "BBB") == "BBB");
+  assert (value_or(os, "BBB") == "BBB");
+};
+
+TEST(mixed_order)
+{
+  using namespace std::experimental;
+  
+  optional<int> oN {nullopt};
+  optional<int> o0 {0};
+  optional<int> o1 {1};
+  
+  assert ( (oN <   0));
+  assert ( (oN <   1));
+  assert (!(o0 <   0));
+  assert ( (o0 <   1));
+  assert (!(o1 <   0));
+  assert (!(o1 <   1));
+  
+  assert (!(oN >=  0));
+  assert (!(oN >=  1));
+  assert ( (o0 >=  0));
+  assert (!(o0 >=  1));
+  assert ( (o1 >=  0));
+  assert ( (o1 >=  1));
+  
+  assert (!(oN >   0));
+  assert (!(oN >   1));
+  assert (!(o0 >   0));
+  assert (!(o0 >   1));
+  assert ( (o1 >   0));
+  assert (!(o1 >   1));
+  
+  assert ( (oN <=  0));
+  assert ( (oN <=  1));
+  assert ( (o0 <=  0));
+  assert ( (o0 <=  1));
+  assert (!(o1 <=  0));
+  assert ( (o1 <=  1));
+  
+  assert ( (0 >  oN));
+  assert ( (1 >  oN));
+  assert (!(0 >  o0));
+  assert ( (1 >  o0));
+  assert (!(0 >  o1));
+  assert (!(1 >  o1));
+  
+  assert (!(0 <= oN));
+  assert (!(1 <= oN));
+  assert ( (0 <= o0));
+  assert (!(1 <= o0));
+  assert ( (0 <= o1));
+  assert ( (1 <= o1));
+  
+  assert (!(0 <  oN));
+  assert (!(1 <  oN));
+  assert (!(0 <  o0));
+  assert (!(1 <  o0));
+  assert ( (0 <  o1));
+  assert (!(1 <  o1));
+  
+  assert ( (0 >= oN));
+  assert ( (1 >= oN));
+  assert ( (0 >= o0));
+  assert ( (1 >= o0));
+  assert (!(0 >= o1));
+  assert ( (1 >= o1));
+};
+
+TEST(mixed_equality)
+{
+  using namespace std::experimental;
+  
+  assert (make_optional(0) == 0);
+  assert (make_optional(1) == 1);
+  assert (make_optional(0) != 1);
+  assert (make_optional(1) != 0);
+  
+  optional<int> oN {nullopt};
+  optional<int> o0 {0};
+  optional<int> o1 {1};
+  
+  assert (o0 ==  0);
+  assert ( 0 == o0);
+  assert (o1 ==  1);
+  assert ( 1 == o1);
+  assert (o1 !=  0);
+  assert ( 0 != o1);
+  assert (o0 !=  1);
+  assert ( 1 != o0);
+  
+  assert ( 1 != oN);
+  assert ( 0 != oN);
+  assert (oN !=  1);
+  assert (oN !=  0);
+  assert (!( 1 == oN));
+  assert (!( 0 == oN));
+  assert (!(oN ==  1));
+  assert (!(oN ==  0));
+  
+  std::string cat{"cat"}, dog{"dog"};
+  optional<std::string> oNil{}, oDog{"dog"}, oCat{"cat"};
+  
+  assert (oCat ==  cat);
+  assert ( cat == oCat);
+  assert (oDog ==  dog);
+  assert ( dog == oDog);
+  assert (oDog !=  cat);
+  assert ( cat != oDog);
+  assert (oCat !=  dog);
+  assert ( dog != oCat);
+  
+  assert ( dog != oNil);
+  assert ( cat != oNil);
+  assert (oNil !=  dog);
+  assert (oNil !=  cat);
+  assert (!( dog == oNil));
+  assert (!( cat == oNil));
+  assert (!(oNil ==  dog));
+  assert (!(oNil ==  cat));
+};
+
+
+static_assert(std::is_base_of<std::logic_error, std::experimental::bad_optional_access>::value, "");
+
+TEST(safe_value)
+{
+  using namespace std::experimental;
+  
+  try {
+    optional<int> ovN{}, ov1{1};
+    
+    int& r1 = ov1.value();
+    assert (r1 == 1);
+    
+    try { 
+      ovN.value();
+      assert (false);
+    }
+    catch (bad_optional_access const&) {
+    }
+    
+    { // ref variant
+      int i1 = 1;
+      optional<int&> orN{}, or1{i1};
+      
+      int& r2 = or1.value();
+      assert (r2 == 1);
+      
+      try { 
+        orN.value();
+        assert (false);
+      }
+      catch (bad_optional_access const&) {
+      }
+    }
+  }  
+  catch(...) {
+    assert (false);
+  }
 };
 
 TEST(optional_ref)
@@ -649,8 +859,8 @@ TEST(optional_ref)
   *ori = 9;
   assert (i == 9);
   
-  // FAILS: int& ir = get_value_or(ori, i);
-  int ii = get_value_or(ori, i);
+  // FAILS: int& ir = value_or(ori, i);
+  int ii = value_or(ori, i);
   assert (ii == 9);
   ii = 7;
   assert (*ori == 9);
