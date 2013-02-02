@@ -362,7 +362,7 @@ public:
   }
 
   // 20.5.4.5 Observers 
-  T const* operator ->() const { 
+  constexpr T const* operator ->() const { 
     #ifdef NDEBUG
     return dataptr();
     #else
