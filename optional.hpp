@@ -581,7 +581,7 @@ template <class T> constexpr bool operator>=(nullopt_t, const optional<T>& x) no
 
 
 
-// 20.5.10, Poisoned comparison with T
+// 20.5.10, Comparison with T
 template <class T> constexpr bool operator==(const optional<T>& x, const T& v)
 {
   return bool(x) ? *x == v : false;
