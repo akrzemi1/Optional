@@ -907,7 +907,27 @@ TEST(optional_ref_assign)
   int i = 9;
   optional<int&> ori = i;
   
+  int j = 1;
+  ori = optional<int&>{j};
   
+  optional<int&> orj = j;
+  
+  assert (ori);
+  assert (*ori == 1);
+  assert (ori == orj);
+  assert (i == 9);
+  
+  *ori = 2;
+  assert (*ori == 2);
+  assert (ori == orj);
+  assert (j == 2);
+  assert (i == 9);
+  
+  ori = {};
+  assert (!ori);
+  assert (ori != orj);
+  assert (j == 2);
+  assert (i == 9);
 };
 
 TEST(optional_initialization)

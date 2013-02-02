@@ -413,9 +413,9 @@ class optional<T&>
 public:
 
   // 20.5.5.1, construction/destruction
-  constexpr optional() : ref(nullptr) {}
+  constexpr optional() noexcept : ref(nullptr) {}
   
-  constexpr optional(nullopt_t) : ref(nullptr) {}
+  constexpr optional(nullopt_t) noexcept : ref(nullptr) {}
    
   constexpr optional(T& v) noexcept : ref(&v) {}
   
@@ -435,10 +435,12 @@ public:
     return *this;
   }
   
-  optional& operator=(const optional& rhs) {
+  optional& operator=(const optional& rhs) noexcept {
     ref = rhs.ref;
     return *this;
   }
+  
+  optional& operator=(T&) = delete;
   
   optional& emplace(T& v) noexcept {
     ref = &v;
