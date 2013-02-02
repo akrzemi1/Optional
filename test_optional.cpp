@@ -805,6 +805,23 @@ TEST(mixed_equality)
   assert (!(oNil ==  cat));
 };
 
+TEST(const_propagation)
+{
+  using namespace std::experimental;
+  
+  optional<int> mmi{0};
+  static_assert(std::is_same<decltype(*mmi), int&>::value, "WTF");
+  
+  const optional<int> cmi{0};
+  static_assert(std::is_same<decltype(*cmi), const int&>::value, "WTF");
+  
+  optional<const int> mci{0};
+  static_assert(std::is_same<decltype(*mci), const int&>::value, "WTF");
+  
+  optional<const int> cci{0};
+  static_assert(std::is_same<decltype(*cci), const int&>::value, "WTF");
+};
+
 
 static_assert(std::is_base_of<std::logic_error, std::experimental::bad_optional_access>::value, "");
 
@@ -871,6 +888,17 @@ TEST(optional_ref)
   assert (j == 23);
 };
 
+TEST(optional_ref_const_propagation)
+{
+  using namespace std::experimental;
+  
+  int i = 9;
+  const optional<int&> mi = i;
+  int& r = *mi; 
+  optional<const int&> ci = i;
+  static_assert(std::is_same<decltype(*mi), int&>::value, "WTF");
+  static_assert(std::is_same<decltype(*ci), const int&>::value, "WTF");
+};
 
 TEST(optional_initialization)
 {
