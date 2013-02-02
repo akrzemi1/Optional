@@ -423,9 +423,6 @@ public:
   
   constexpr optional(const optional& rhs) noexcept : ref(rhs.ref) {}
   
-  template <class U> 
-  constexpr optional(const optional<U&>& rhs) noexcept : ref(rhs.ref) {}
-  
   explicit constexpr optional(emplace_t, T& v) noexcept : ref(&v) {}
   
   explicit optional(emplace_t, T&&) = delete;
@@ -438,8 +435,10 @@ public:
     return *this;
   }
   
-  optional& operator=(optional&&) = delete;
-  optional& operator=(const optional&) = delete;
+  optional& operator=(const optional& rhs) {
+    ref = rhs.ref;
+    return *this;
+  }
   
   optional& emplace(T& v) noexcept {
     ref = &v;

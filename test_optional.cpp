@@ -900,6 +900,16 @@ TEST(optional_ref_const_propagation)
   static_assert(std::is_same<decltype(*ci), const int&>::value, "WTF");
 };
 
+TEST(optional_ref_assign)
+{
+  using namespace std::experimental;
+  
+  int i = 9;
+  optional<int&> ori = i;
+  
+  
+};
+
 TEST(optional_initialization)
 {
     using namespace tr2;
