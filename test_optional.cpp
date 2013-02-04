@@ -924,6 +924,10 @@ TEST(optional_ref_assign)
   
   *ori = 2;
   assert (*ori == 2);
+  assert (ori == 2);
+  assert (2 == ori);
+  assert (ori != 3);
+  
   assert (ori == orj);
   assert (j == 2);
   assert (i == 9);

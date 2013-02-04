@@ -627,7 +627,6 @@ template <class T> constexpr bool operator!=(const T& v, const optional<T>& x)
   return !(x == v);
 }
 
-
 template <class T> constexpr bool operator<(const optional<T>& x, const T& v)
 {
   return bool(x) ? *x < v : true;
@@ -669,7 +668,69 @@ template <class T> constexpr bool operator>=(const T& v, const optional<T>& x)
 }
 
 
-// 20.5.10 Specialized algorithms 
+// 20.5.11, Comparison with T
+template <class T> constexpr bool operator==(const optional<T&>& x, const T& v)
+{
+  return bool(x) ? *x == v : false;
+}
+
+template <class T> constexpr bool operator==(const T& v, const optional<T&>& x)
+{
+  return bool(x) ? *x == v : false;
+}
+
+template <class T> constexpr bool operator!=(const optional<T&>& x, const T& v)
+{
+  return !(x == v);
+}
+
+template <class T> constexpr bool operator!=(const T& v, const optional<T&>& x)
+{
+  return !(x == v);
+}
+
+template <class T> constexpr bool operator<(const optional<T&>& x, const T& v)
+{
+  return bool(x) ? *x < v : true;
+}
+
+template <class T> constexpr bool operator>(const T& v, const optional<T&>& x)
+{
+  return bool(x) ? *x < v : true;
+}
+
+template <class T> constexpr bool operator>(const optional<T&>& x, const T& v)
+{
+  return bool(x) ? *x > v : false;
+}
+
+template <class T> constexpr bool operator<(const T& v, const optional<T&>& x)
+{
+  return bool(x) ? *x > v : false;
+}
+
+template <class T> constexpr bool operator>=(const optional<T&>& x, const T& v)
+{
+  return !(x < v);
+}
+
+template <class T> constexpr bool operator<=(const T& v, const optional<T&>& x)
+{
+  return !(x < v);
+}
+
+template <class T> constexpr bool operator<=(const optional<T&>& x, const T& v)
+{
+  return !(x > v);
+}
+
+template <class T> constexpr bool operator>=(const T& v, const optional<T&>& x)
+{
+  return !(x > v);
+}
+
+
+// 20.5.12 Specialized algorithms 
 template <class T> 
 void swap(optional<T>& x, optional<T>& y) noexcept(noexcept(x.swap(y)))
 {
