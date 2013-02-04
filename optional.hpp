@@ -435,12 +435,36 @@ public:
     return *this;
   }
   
-  optional& operator=(const optional& rhs) noexcept {
+  // optional& operator=(const optional& rhs) noexcept {
+    // ref = rhs.ref;
+    // return *this;
+  // }
+  
+  // optional& operator=(optional&& rhs) noexcept {
+    // ref = rhs.ref;
+    // return *this;
+  // }
+  
+  template <typename U> 
+  auto operator=(U&& rhs) noexcept
+  -> typename enable_if
+  <
+    is_same<typename decay<U>::type, optional<T&>>::value,
+    optional&
+  >::type
+  {
     ref = rhs.ref;
     return *this;
   }
   
-  optional& operator=(T&) = delete;
+  template <typename U> 
+  auto operator=(U&& rhs) noexcept
+  -> typename enable_if
+  <
+    !is_same<typename decay<U>::type, optional<T&>>::value,
+    optional&
+  >::type
+  = delete;
   
   optional& emplace(T& v) noexcept {
     ref = &v;

@@ -909,6 +909,11 @@ TEST(optional_ref_assign)
   
   int j = 1;
   ori = optional<int&>{j};
+  ori = {j};
+  // FAILS: ori = j;
+  
+  optional<int&> orx = ori;
+  ori = orx;
   
   optional<int&> orj = j;
   
