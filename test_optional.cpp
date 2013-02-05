@@ -939,6 +939,23 @@ TEST(optional_ref_assign)
   assert (i == 9);
 };
 
+
+TEST(optional_ref_swap)
+{
+  using namespace std::experimental;
+  int i = 0;
+  int j = 1;
+  optional<int&> oi = i;
+  optional<int&> oj = j;
+  
+  assert (&*oi == &i);
+  assert (&*oj == &j);
+  
+  swap(oi, oj);
+  assert (&*oi == &j);
+  assert (&*oj == &i);
+};
+
 TEST(optional_initialization)
 {
     using namespace tr2;

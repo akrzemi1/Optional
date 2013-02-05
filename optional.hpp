@@ -472,6 +472,12 @@ public:
   }
   
   optional& emplace(T&&) = delete;
+  
+  
+  void swap(optional<T&>& rhs) noexcept
+  {
+    std::swap(ref, rhs.ref);
+  }
     
   // 20.5.5.3, observers
   constexpr T* operator->() const {
@@ -734,7 +740,6 @@ template <class T> constexpr bool operator>=(const T& v, const optional<T&>& x)
 template <class T> 
 void swap(optional<T>& x, optional<T>& y) noexcept(noexcept(x.swap(y)))
 {
-  static_assert(!is_reference<T>::value, "no swap for optional refs");
   x.swap(y);
 }
 
