@@ -1000,34 +1000,37 @@ TEST(optional_hashing)
 };
 
 
-#include <unordered_set>
 
-TEST(optional_hashing)
+TEST(optional_ref_hashing)
 {
     using namespace tr2;
     using std::string;
     
     std::hash<int> hi;
-    std::hash<optional<int>> hoi;
+    std::hash<optional<int&>> hoi;
     std::hash<string> hs;
-    std::hash<optional<string>> hos;
+    std::hash<optional<string&>> hos;
     
-    assert (hi(0) == hoi(optional<int>{0}));
-    assert (hi(1) == hoi(optional<int>{1}));
-    assert (hi(3198) == hoi(optional<int>{3198}));
+    int i0 = 0;
+    int i1 = 1;
+    assert (hi(0) == hoi(optional<int&>{i0}));
+    assert (hi(1) == hoi(optional<int&>{i1}));
     
-    assert (hs("") == hos(optional<string>{""}));
-    assert (hs("0") == hos(optional<string>{"0"}));
-    assert (hs("Qa1#") == hos(optional<string>{"Qa1#"}));
+    string s{""};
+    string s0{"0"};
+    string sCAT{"CAT"};
+    assert (hs("") == hos(optional<string&>{s}));
+    assert (hs("0") == hos(optional<string&>{s0}));
+    assert (hs("CAT") == hos(optional<string&>{sCAT}));
     
-    std::unordered_set<optional<string>> set;
-    assert(set.find({"Qa1#"}) == set.end());
+    std::unordered_set<optional<string&>> set;
+    assert(set.find({sCAT}) == set.end());
     
-    set.insert({"0"});
-    assert(set.find({"Qa1#"}) == set.end());
+    set.insert({s0});
+    assert(set.find({sCAT}) == set.end());
     
-    set.insert({"Qa1#"});
-    assert(set.find({"Qa1#"}) != set.end());
+    set.insert({sCAT});
+    assert(set.find({sCAT}) != set.end());
 };
 
 

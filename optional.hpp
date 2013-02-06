@@ -783,6 +783,17 @@ namespace std
       return arg ? std::hash<T>{}(*arg) : result_type{};
     }
   };
+  
+  template <typename T> 
+  struct hash<std::experimental::optional<T&>>
+  {
+    typedef typename hash<T>::result_type result_type;
+    typedef std::experimental::optional<T&> argument_type;
+    
+    constexpr result_type operator()(argument_type const& arg) const {
+      return arg ? std::hash<T>{}(*arg) : result_type{};
+    }
+  };
 }
 
 
