@@ -1126,6 +1126,27 @@ static_assert( g2 == tr2::make_optional(2), "not 2!" );
 static_assert( g2 != g0, "eq!" );
 
 
+// optional refs
+int gi = 0;
+constexpr tr2::optional<int&> gori = gi;
+constexpr tr2::optional<int&> gorn{};
+constexpr int& gri = *gori;
+static_assert(gori, "WTF");
+static_assert(!gorn, "WTF");
+static_assert(gori != tr2::nullopt, "WTF");
+static_assert(gorn == tr2::nullopt, "WTF");
+static_assert(&gri == &*gori, "WTF");
+
+constexpr int gci = 1;
+constexpr tr2::optional<int const&> gorci = gci;
+constexpr tr2::optional<int const&> gorcn{};
+
+static_assert(gorcn <  gorci, "WTF");
+static_assert(gorcn <= gorci, "WTF");
+static_assert(gorci == gorci, "WTF");
+static_assert(*gorci == 1, "WTF");
+static_assert(gorci == gci, "WTF");
+
 // end constexpr tests
 
 
