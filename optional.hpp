@@ -114,11 +114,10 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 # define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
   inline void fail(const char* expr, const char* file, unsigned line)
   {
-  # if defined __clang__
+  # if defined __clang__ || defined __GNU_LIBRARY__
     __assert(expr, file, line);
   # elif defined __GNUC__
     _assert(expr, file, line);
-  
   # else
   #   error UNSUPPORTED COMPILER
   # endif
