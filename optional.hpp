@@ -114,10 +114,11 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 # define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
   inline void fail(const char* expr, const char* file, unsigned line)
   {
-  # if defined __GNUC__
-    _assert(expr, file, line);
-  # elif defined __clang__
+  # if defined __clang__
     __assert(expr, file, line);
+  # elif defined __GNUC__
+    _assert(expr, file, line);
+  
   # else
   #   error UNSUPPORTED COMPILER
   # endif
@@ -263,6 +264,8 @@ class optional : private OptionalBase<T>
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
   T* dataptr() {  return std::addressof(OptionalBase<T>::storage_.value_); }
   constexpr const T* dataptr() const { return constexpr_addressof(OptionalBase<T>::storage_.value_); }
+  constexpr const T& contained_val() const { return OptionalBase<T>::storage_.value_; }
+  T& contained_val() { return OptionalBase<T>::storage_.value_; }
 
   void clear() noexcept { 
     if (initialized()) dataptr()->T::~T();
@@ -330,7 +333,7 @@ public:
   {
     if      (initialized() == true  && rhs.initialized() == false) clear();
     else if (initialized() == false && rhs.initialized() == true)  initialize(*rhs);
-    else if (initialized() == true  && rhs.initialized() == true)  *dataptr() = *rhs;
+    else if (initialized() == true  && rhs.initialized() == true)  contained_val() = *rhs;
     return *this;
   }
   
@@ -339,7 +342,7 @@ public:
   {
     if      (initialized() == true  && rhs.initialized() == false) clear();
     else if (initialized() == false && rhs.initialized() == true)  initialize(std::move(*rhs));
-    else if (initialized() == true  && rhs.initialized() == true)  *dataptr() = std::move(*rhs);
+    else if (initialized() == true  && rhs.initialized() == true)  contained_val() = std::move(*rhs);
     return *this;
   }
 
@@ -351,7 +354,7 @@ public:
     optional&
   >::type
   {
-    if (initialized()) { *dataptr() = std::forward<U>(v); }
+    if (initialized()) { contained_val() = std::forward<U>(v); }
     else               { initialize(std::forward<U>(v));  }  
     return *this;             
   }
@@ -392,20 +395,20 @@ public:
   }
   
   constexpr T const& operator *() const { 
-    return ASSERTED_EXPRESSION(initialized(), *dataptr());
+    return ASSERTED_EXPRESSION(initialized(), contained_val());
   }
   
   T& operator *() { 
     assert (initialized()); 
-    return *dataptr(); 
+    return contained_val(); 
   }
   
   constexpr T const& value() const {
-    return initialized() ? *dataptr() : throw bad_optional_access("bad optional access");
+    return initialized() ? contained_val() : throw bad_optional_access("bad optional access");
   }
   
   T& value() {
-    return initialized() ? *dataptr() : (throw bad_optional_access("bad optional access"), *dataptr());
+    return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
   constexpr explicit operator bool() const noexcept { return initialized(); }  

@@ -7,7 +7,7 @@ A library for optional (nullable) objects for C++11. The interface is based on F
 Supported compilers
 -------------------
 
-G++ 4.7.2 (and probably later)
+Clang 3.2, G++ 4.7.2 (and probably later)
 
 
 Usage

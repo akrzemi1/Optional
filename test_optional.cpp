@@ -453,7 +453,7 @@ TEST(example_ref)
 template <typename T>
 T getValue( tr2::optional<T> newVal = tr2::nullopt, tr2::optional<T&> storeHere = tr2::nullopt )
 {
-  T cached;
+  T cached{};
   
   if (newVal) {
     cached = *newVal;
