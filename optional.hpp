@@ -620,17 +620,17 @@ template <class T> constexpr bool operator==(const optional<T>& x, const T& v)
 
 template <class T> constexpr bool operator==(const T& v, const optional<T>& x)
 {
-  return bool(x) ? *x == v : false;
+  return bool(x) ? v == *x : false;
 }
 
 template <class T> constexpr bool operator!=(const optional<T>& x, const T& v)
 {
-  return !(x == v);
+  return bool(x) ? *x != v : true;
 }
 
 template <class T> constexpr bool operator!=(const T& v, const optional<T>& x)
 {
-  return !(x == v);
+  return bool(x) ? v != *x : true;
 }
 
 template <class T> constexpr bool operator<(const optional<T>& x, const T& v)
@@ -640,7 +640,7 @@ template <class T> constexpr bool operator<(const optional<T>& x, const T& v)
 
 template <class T> constexpr bool operator>(const T& v, const optional<T>& x)
 {
-  return bool(x) ? *x < v : true;
+  return bool(x) ? v > *x : true;
 }
 
 template <class T> constexpr bool operator>(const optional<T>& x, const T& v)
@@ -650,31 +650,31 @@ template <class T> constexpr bool operator>(const optional<T>& x, const T& v)
 
 template <class T> constexpr bool operator<(const T& v, const optional<T>& x)
 {
-  return bool(x) ? *x > v : false;
+  return bool(x) ? v < *x : false;
 }
 
 template <class T> constexpr bool operator>=(const optional<T>& x, const T& v)
 {
-  return !(x < v);
+  return bool(x) ? *x >= v : false;
 }
 
 template <class T> constexpr bool operator<=(const T& v, const optional<T>& x)
 {
-  return !(x < v);
+  return bool(x) ? v <= *x : false;
 }
 
 template <class T> constexpr bool operator<=(const optional<T>& x, const T& v)
 {
-  return !(x > v);
+  return bool(x) ? *x <= v : true;
 }
 
 template <class T> constexpr bool operator>=(const T& v, const optional<T>& x)
 {
-  return !(x > v);
+  return bool(x) ? v >= *x : true;
 }
 
 
-// 20.5.11, Comparison with T
+// Comparison of optionsl<T&> with T
 template <class T> constexpr bool operator==(const optional<T&>& x, const T& v)
 {
   return bool(x) ? *x == v : false;
@@ -682,17 +682,17 @@ template <class T> constexpr bool operator==(const optional<T&>& x, const T& v)
 
 template <class T> constexpr bool operator==(const T& v, const optional<T&>& x)
 {
-  return bool(x) ? *x == v : false;
+  return bool(x) ? v == *x : false;
 }
 
 template <class T> constexpr bool operator!=(const optional<T&>& x, const T& v)
 {
-  return !(x == v);
+  return bool(x) ? *x != v : true;
 }
 
 template <class T> constexpr bool operator!=(const T& v, const optional<T&>& x)
 {
-  return !(x == v);
+  return bool(x) ? v != *x : true;
 }
 
 template <class T> constexpr bool operator<(const optional<T&>& x, const T& v)
@@ -702,7 +702,7 @@ template <class T> constexpr bool operator<(const optional<T&>& x, const T& v)
 
 template <class T> constexpr bool operator>(const T& v, const optional<T&>& x)
 {
-  return bool(x) ? *x < v : true;
+  return bool(x) ? v > *x : true;
 }
 
 template <class T> constexpr bool operator>(const optional<T&>& x, const T& v)
@@ -712,30 +712,30 @@ template <class T> constexpr bool operator>(const optional<T&>& x, const T& v)
 
 template <class T> constexpr bool operator<(const T& v, const optional<T&>& x)
 {
-  return bool(x) ? *x > v : false;
+  return bool(x) ? v < *x : false;
 }
 
 template <class T> constexpr bool operator>=(const optional<T&>& x, const T& v)
 {
-  return !(x < v);
+  return bool(x) ? *x >= v : false;
 }
 
 template <class T> constexpr bool operator<=(const T& v, const optional<T&>& x)
 {
-  return !(x < v);
+  return bool(x) ? v <= *x : false;
 }
 
 template <class T> constexpr bool operator<=(const optional<T&>& x, const T& v)
 {
-  return !(x > v);
+  return bool(x) ? *x <= v : true;
 }
 
 template <class T> constexpr bool operator>=(const T& v, const optional<T&>& x)
 {
-  return !(x > v);
+  return bool(x) ? v >= *x : true;
 }
 
-////
+// Comparison of optionsl<T const&> with T
 template <class T> constexpr bool operator==(const optional<const T&>& x, const T& v)
 {
   return bool(x) ? *x == v : false;
@@ -743,17 +743,17 @@ template <class T> constexpr bool operator==(const optional<const T&>& x, const 
 
 template <class T> constexpr bool operator==(const T& v, const optional<const T&>& x)
 {
-  return bool(x) ? *x == v : false;
+  return bool(x) ? v == *x : false;
 }
 
 template <class T> constexpr bool operator!=(const optional<const T&>& x, const T& v)
 {
-  return !(x == v);
+  return bool(x) ? *x != v : true;
 }
 
 template <class T> constexpr bool operator!=(const T& v, const optional<const T&>& x)
 {
-  return !(x == v);
+  return bool(x) ? v != *x : true;
 }
 
 template <class T> constexpr bool operator<(const optional<const T&>& x, const T& v)
@@ -763,7 +763,7 @@ template <class T> constexpr bool operator<(const optional<const T&>& x, const T
 
 template <class T> constexpr bool operator>(const T& v, const optional<const T&>& x)
 {
-  return bool(x) ? *x < v : true;
+  return bool(x) ? v > *x : true;
 }
 
 template <class T> constexpr bool operator>(const optional<const T&>& x, const T& v)
@@ -773,27 +773,27 @@ template <class T> constexpr bool operator>(const optional<const T&>& x, const T
 
 template <class T> constexpr bool operator<(const T& v, const optional<const T&>& x)
 {
-  return bool(x) ? *x > v : false;
+  return bool(x) ? v < *x : false;
 }
 
 template <class T> constexpr bool operator>=(const optional<const T&>& x, const T& v)
 {
-  return !(x < v);
+  return bool(x) ? *x >= v : false;
 }
 
 template <class T> constexpr bool operator<=(const T& v, const optional<const T&>& x)
 {
-  return !(x < v);
+  return bool(x) ? v <= *x : false;
 }
 
 template <class T> constexpr bool operator<=(const optional<const T&>& x, const T& v)
 {
-  return !(x > v);
+  return bool(x) ? *x <= v : true;
 }
 
 template <class T> constexpr bool operator>=(const T& v, const optional<const T&>& x)
 {
-  return !(x > v);
+  return bool(x) ? v >= *x : true;
 }
 
 

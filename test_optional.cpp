@@ -752,6 +752,37 @@ TEST(mixed_order)
   assert ( (1 >= o1));
 };
 
+struct BadRelops
+{
+  int i;
+};
+
+constexpr bool operator<(BadRelops a, BadRelops b) { return a.i < b.i; }
+constexpr bool operator>(BadRelops a, BadRelops b) { return a.i < b.i; } // intentional error!
+
+TEST(bad_relops)
+{
+  using namespace std::experimental;
+  BadRelops a{1}, b{2};
+  assert (a < b);
+  assert (a > b);
+  
+  optional<BadRelops> oa = a, ob = b;
+  assert (oa < ob);
+  assert (!(oa > ob));
+  
+  assert (oa < b);
+  assert (oa > b);
+  
+  optional<BadRelops&> ra = a, rb = b;
+  assert (ra < rb);
+  assert (!(ra > rb));
+  
+  assert (ra < b);
+  assert (ra > b);
+};
+
+
 TEST(mixed_equality)
 {
   using namespace std::experimental;
@@ -873,6 +904,7 @@ TEST(optional_ref)
   ori.emplace(i);
   assert (bool(ori));
   assert (*ori == 8);
+  assert (&*ori == &i);
   *ori = 9;
   assert (i == 9);
   
@@ -885,6 +917,7 @@ TEST(optional_ref)
   int j = 22;
   auto&& oj = make_optional(std::ref(j));
   *oj = 23;
+  assert (&*oj == &j);
   assert (j == 23);
 };
 
@@ -999,6 +1032,45 @@ TEST(optional_hashing)
     assert(set.find({"Qa1#"}) != set.end());
 };
 
+
+// optional_ref_emulation
+template <class T>
+struct generic
+{
+  typedef T type;
+};
+
+template <class U>
+struct generic<U&>
+{
+  typedef std::reference_wrapper<U> type;
+};
+
+template <class T>
+using Generic = typename generic<T>::type;
+
+template <class X>
+bool generic_fun()
+{
+  std::experimental::optional<Generic<X>> op;
+  return bool(op);
+}
+
+TEST(optional_ref_emulation)
+{
+  using namespace std::experimental;
+  optional<Generic<int>> oi = 1;
+  assert (*oi == 1);
+  
+  int i = 8;
+  int j = 4;
+  optional<Generic<int&>> ori {i};
+  assert (*ori == 8);
+  assert ((void*)&*ori != (void*)&i); // !DIFFERENT THAN optional<T&>
+
+  *ori = j;
+  assert (*ori == 4);
+};
 
 
 TEST(optional_ref_hashing)
