@@ -400,6 +400,19 @@ public:
   }
   
   constexpr explicit operator bool() const noexcept { return initialized(); }  
+  
+  template <class V>
+  constexpr T value_or(V&& v) const
+  {
+    return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
+  }
+  
+  // missing language feature
+  //template <class V>
+  //constexpr T value_or(V&& v) &&
+  //{
+  //  return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
+  //}
 };
 
 
@@ -507,6 +520,12 @@ public:
   explicit constexpr operator bool() const noexcept { 
     return ref != nullptr; 
   }  
+  
+  template <class V>
+  constexpr typename decay<T>::type value_or(V&& v) const
+  {
+    return *this ? **this : static_cast<typename decay<T>::type>(constexpr_forward<V>(v));
+  }
 };
 
 
@@ -804,17 +823,6 @@ void swap(optional<T>& x, optional<T>& y) noexcept(noexcept(x.swap(y)))
   x.swap(y);
 }
 
-template <class T, class V>
-constexpr typename decay<T>::type value_or(const optional<T>& op, V&& v)
-{
-  return op ? *op : static_cast<T>(constexpr_forward<V>(v));
-}
-
-template <class T, class V>
-constexpr typename decay<T>::type value_or(optional<T>&& op, V&& v)
-{
-  return op ? constexpr_move(*op) : static_cast<T>(std::forward<V>(v));
-}
 
 template <class T>
 constexpr optional<typename decay<T>::type> make_optional(T&& v)

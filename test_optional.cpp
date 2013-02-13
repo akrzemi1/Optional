@@ -413,7 +413,7 @@ TEST(example1)
     process(*om);   
   
   /////////////////////////////////////////
-  process(value_or(ol, 0));     // use 0 if ol is disengaged
+  process(ol.value_or(0));     // use 0 if ol is disengaged
   
   ////////////////////////////////////////////
   ok = nullopt;                         // if ok was engaged calls T's dtor
@@ -675,16 +675,16 @@ TEST(bad_comparison)
 TEST(value_or)
 {
   tr2::optional<int> oi = 1;
-  int i = value_or(oi, 0);
+  int i = oi.value_or(0);
   assert (i == 1);
   
   oi = tr2::nullopt;
-  assert (value_or(oi, 3) == 3);
+  assert (oi.value_or(3) == 3);
   
   tr2::optional<std::string> os{"AAA"};
-  assert (value_or(os, "BBB") == "AAA");
+  assert (os.value_or("BBB") == "AAA");
   os = {};
-  assert (value_or(os, "BBB") == "BBB");
+  assert (os.value_or("BBB") == "BBB");
 };
 
 TEST(mixed_order)
@@ -908,8 +908,8 @@ TEST(optional_ref)
   *ori = 9;
   assert (i == 9);
   
-  // FAILS: int& ir = value_or(ori, i);
-  int ii = value_or(ori, i);
+  // FAILS: int& ir = ori.value_or(i);
+  int ii = ori.value_or(i);
   assert (ii == 9);
   ii = 7;
   assert (*ori == 9);
