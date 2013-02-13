@@ -28,6 +28,8 @@ namespace std{
 
 # if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
     // leave it; our metafunctions are already defined.
+# elif defined __clang__
+    // leave it; our metafunctions are already defined.
 # else
 
 
@@ -104,6 +106,23 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 {
     return ((_Ty *) &(char&)_Val);
 }
+
+
+#if defined NDEBUG
+# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
+#else
+# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
+  inline void fail(const char* expr, const char* file, unsigned line)
+  {
+  # if defined __GNUC__
+    _assert(expr, file, line);
+  # elif defined __clang__
+    __assert(expr, file, line);
+  # else
+  #   error UNSUPPORTED COMPILER
+  # endif
+  }
+#endif
 
 
 template <class U>
@@ -244,7 +263,7 @@ class optional : private OptionalBase<T>
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
   T* dataptr() {  return std::addressof(OptionalBase<T>::storage_.value_); }
   constexpr const T* dataptr() const { return constexpr_addressof(OptionalBase<T>::storage_.value_); }
-  
+
   void clear() noexcept { 
     if (initialized()) dataptr()->T::~T();
     OptionalBase<T>::init_ = false; 
@@ -363,13 +382,8 @@ public:
   }
 
   // 20.5.4.5 Observers 
-  constexpr T const* operator ->() const { 
-    #ifdef NDEBUG
-    return dataptr();
-    #else
-    return (initialized() ? dataptr() : (_assert("initialized()", __FILE__, __LINE__), dataptr()));
-    #endif
-    // return assert(initialized()), dataptr(); 
+  constexpr T const* operator ->() const {  
+    return ASSERTED_EXPRESSION(initialized(), dataptr());
   }
   
   T* operator ->() { 
@@ -378,12 +392,7 @@ public:
   }
   
   constexpr T const& operator *() const { 
-    #ifdef NDEBUG
-    return *dataptr();
-    #else
-    return (initialized() ? *dataptr() : (_assert("initialized()", __FILE__, __LINE__), *dataptr()));
-    #endif
-    // return assert(initialized()), *dataptr();
+    return ASSERTED_EXPRESSION(initialized(), *dataptr());
   }
   
   T& operator *() { 
@@ -494,23 +503,11 @@ public:
     
   // 20.5.5.3, observers
   constexpr T* operator->() const {
-    #ifdef NDEBUG
-    return ref;
-    #else
-    return (ref ? ref : (_assert("ref", __FILE__, __LINE__), ref));
-    #endif
-    // in GCC 4.7.3: 
-    //return assert (ref), ref;
+    return ASSERTED_EXPRESSION(ref, ref);
   }
   
   constexpr T& operator*() const {    
-    #ifdef NDEBUG
-    return *ref;
-    #else
-    return (ref ? *ref : (_assert("ref", __FILE__, __LINE__), *ref));
-    #endif
-    // in GCC 4.7.3: 
-    //return assert (ref), *ref;
+    return ASSERTED_EXPRESSION(ref, *ref);
   }
   
   constexpr T& value() const {

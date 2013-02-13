@@ -16,7 +16,7 @@
 
 
 struct caller {
-    template <class T> caller(T fun) { fun(); };
+    template <class T> caller(T fun) { fun(); }
 };
 # define CAT2(X, Y) X ## Y
 # define CAT(X, Y) CAT2(X, Y)
@@ -1181,12 +1181,12 @@ void constexpr_test_disengaged()
   static_assert(  (tr2::nullopt <= g0), "!" );
   static_assert( !(tr2::nullopt <  g0), "!" );
   
-  static_assert(  (g1 != tr2::make_optional(1)), "!" );
-  static_assert( !(g1 == tr2::make_optional(1)), "!" );
-  static_assert(  (g1 <  tr2::make_optional(1)), "!" );
-  static_assert(  (g1 <= tr2::make_optional(1)), "!" );
-  static_assert( !(g1 >  tr2::make_optional(1)), "!" );
-  static_assert( !(g1 >  tr2::make_optional(1)), "!" );
+  static_assert(  (g1 != tr2::optional<int>(1)), "!" );
+  static_assert( !(g1 == tr2::optional<int>(1)), "!" );
+  static_assert(  (g1 <  tr2::optional<int>(1)), "!" );
+  static_assert(  (g1 <= tr2::optional<int>(1)), "!" );
+  static_assert( !(g1 >  tr2::optional<int>(1)), "!" );
+  static_assert( !(g1 >  tr2::optional<int>(1)), "!" );
 }
 
 
@@ -1194,7 +1194,7 @@ constexpr tr2::optional<int> g0{};
 constexpr tr2::optional<int> g2{2};
 static_assert( g2, "not initialized!" );
 static_assert( *g2 == 2, "not 2!" );
-static_assert( g2 == tr2::make_optional(2), "not 2!" );
+static_assert( g2 == tr2::optional<int>(2), "not 2!" );
 static_assert( g2 != g0, "eq!" );
 
 
