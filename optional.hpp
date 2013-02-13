@@ -832,7 +832,7 @@ constexpr optional<typename decay<T>::type> make_optional(T&& v)
 template <class X>
 constexpr optional<X&> make_optional(reference_wrapper<X> v)
 {
-  return optional<X&>(v);
+  return optional<X&>(v.get());
 }
 
 
