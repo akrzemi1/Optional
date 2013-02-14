@@ -636,7 +636,7 @@ TEST(example_rationale)
 };
 
 
-bool fun(std::string s, std::experimental::optional<int> oi = std::experimental::nullopt) 
+bool fun(std::string , std::experimental::optional<int> oi = std::experimental::nullopt) 
 {
   return bool(oi);
 }
@@ -656,8 +656,9 @@ TEST(bad_comparison)
   tr2::optional<int> oi, oj;
   int i;
   bool b = (oi == oj);
-  // FAILS: b = (oi >= i);
-  // FAILS: b = (oi == i);
+  b = (oi >= i);
+  b = (oi == i);
+  b = b;
 };
 
 
@@ -931,6 +932,8 @@ TEST(optional_ref_const_propagation)
   optional<const int&> ci = i;
   static_assert(std::is_same<decltype(*mi), int&>::value, "WTF");
   static_assert(std::is_same<decltype(*ci), const int&>::value, "WTF");
+  
+  r = r;
 };
 
 TEST(optional_ref_assign)
@@ -1114,6 +1117,17 @@ struct Combined
   constexpr Combined(int m, int n) : m{m}, n{n} {}
 };
 
+struct Nasty
+{
+  int m = 0;
+  int n = 1;
+  
+  constexpr Nasty() : m{5}, n{6} {}
+  constexpr Nasty(int m, int n) : m{m}, n{n} {}
+  
+  int operator&() { return n; }
+};
+
 TEST(arrow_operator)
 {
   using namespace std::experimental;
@@ -1122,6 +1136,11 @@ TEST(arrow_operator)
   assert (oc1);
   assert (oc1->m == 1);
   assert (oc1->n == 2);
+  
+  optional<Nasty> on{emplace, 1, 2};
+  assert (on);
+  assert (on->m == 1);
+  assert (on->n == 2);
 };
 
 
@@ -1254,10 +1273,10 @@ struct VEC
 {
     std::vector<int> v;
     template <typename... X>
-    VEC( X&&...x) : v(std::forward<X>(x)...) {};
+    VEC( X&&...x) : v(std::forward<X>(x)...) {}
 
     template <typename U, typename... X>
-    VEC(std::initializer_list<U> il, X&&...x) : v(il, std::forward<X>(x)...) {};
+    VEC(std::initializer_list<U> il, X&&...x) : v(il, std::forward<X>(x)...) {}
 };
 
 
