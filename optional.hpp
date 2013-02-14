@@ -125,6 +125,34 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 #endif
 
 
+template <typename T>
+struct has_overloaded_addressof
+{
+  template <class X>
+  static constexpr bool has_overload(...) { return false; }
+  
+  template <class X, size_t S = sizeof(std::declval< X&>().operator&()) >
+  static constexpr bool has_overload(bool) { return true; }
+
+  constexpr static bool value = has_overload<T>(true);
+};
+
+
+
+template <typename T, REQUIRES(!has_overloaded_addressof<T>)>
+constexpr const T* static_addressof(const T& ref)
+{
+  return &ref;
+}
+
+template <typename T, REQUIRES(has_overloaded_addressof<T>)>
+const T* static_addressof(const T& ref)
+{
+  return std::addressof(ref);
+}
+
+
+
 template <class U>
 struct is_not_optional
 {
@@ -234,7 +262,7 @@ struct constexpr_optional_base
 
     explicit constexpr constexpr_optional_base(T&& v) : init_(true), storage_(constexpr_move(v)) {}
 
-    template <class... Args> explicit constexpr_optional_base(emplace_t, Args&&... args)
+    template <class... Args> explicit constexpr constexpr_optional_base(emplace_t, Args&&... args)
       : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
@@ -262,7 +290,7 @@ class optional : private OptionalBase<T>
 
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
   T* dataptr() {  return std::addressof(OptionalBase<T>::storage_.value_); }
-  constexpr const T* dataptr() const { return constexpr_addressof(OptionalBase<T>::storage_.value_); }
+  constexpr const T* dataptr() const { return static_addressof(OptionalBase<T>::storage_.value_); }
   constexpr const T& contained_val() const { return OptionalBase<T>::storage_.value_; }
   T& contained_val() { return OptionalBase<T>::storage_.value_; }
 

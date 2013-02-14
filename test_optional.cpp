@@ -1105,6 +1105,25 @@ TEST(optional_ref_hashing)
     assert(set.find({sCAT}) != set.end());
 };
 
+struct Combined
+{
+  int m = 0;
+  int n = 1;
+  
+  constexpr Combined() : m{5}, n{6} {}
+  constexpr Combined(int m, int n) : m{m}, n{n} {}
+};
+
+TEST(arrow_operator)
+{
+  using namespace std::experimental;
+  
+  optional<Combined> oc1{emplace, 1, 2};
+  assert (oc1);
+  assert (oc1->m == 1);
+  assert (oc1->n == 2);
+};
+
 
 //// constexpr tests
 
@@ -1197,6 +1216,12 @@ static_assert( *g2 == 2, "not 2!" );
 static_assert( g2 == tr2::optional<int>(2), "not 2!" );
 static_assert( g2 != g0, "eq!" );
 
+
+
+
+
+constexpr tr2::optional<Combined> gc0{tr2::emplace};
+static_assert(gc0->n == 6, "WTF!");
 
 // optional refs
 int gi = 0;
