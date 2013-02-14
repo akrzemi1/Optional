@@ -140,13 +140,13 @@ struct has_overloaded_addressof
 
 
 template <typename T, REQUIRES(!has_overloaded_addressof<T>)>
-constexpr const T* static_addressof(const T& ref)
+constexpr T* static_addressof(T& ref)
 {
   return &ref;
 }
 
 template <typename T, REQUIRES(has_overloaded_addressof<T>)>
-const T* static_addressof(const T& ref)
+T* static_addressof(T& ref)
 {
   return std::addressof(ref);
 }
@@ -469,13 +469,13 @@ public:
   
   constexpr optional(nullopt_t) noexcept : ref(nullptr) {}
    
-  constexpr optional(T& v) noexcept : ref(&v) {}
+  constexpr optional(T& v) noexcept : ref(static_addressof(v)) {}
   
   optional(T&&) = delete;
   
   constexpr optional(const optional& rhs) noexcept : ref(rhs.ref) {}
   
-  explicit constexpr optional(emplace_t, T& v) noexcept : ref(&v) {}
+  explicit constexpr optional(emplace_t, T& v) noexcept : ref(static_addressof(v)) {}
   
   explicit optional(emplace_t, T&&) = delete;
   
@@ -519,7 +519,7 @@ public:
   = delete;
   
   optional& emplace(T& v) noexcept {
-    ref = &v;
+    ref = static_addressof(v);
     return *this;
   }
   

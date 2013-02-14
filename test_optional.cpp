@@ -1126,6 +1126,7 @@ struct Nasty
   constexpr Nasty(int m, int n) : m{m}, n{n} {}
   
   int operator&() { return n; }
+  int operator&() const { return n; }
 };
 
 TEST(arrow_operator)
@@ -1141,6 +1142,41 @@ TEST(arrow_operator)
   assert (on);
   assert (on->m == 1);
   assert (on->n == 2);
+};
+
+TEST(arrow_wit_optional_ref)
+{
+  using namespace std::experimental;
+  
+  Combined c{1, 2};
+  optional<Combined&> oc = c;
+  assert (oc);
+  assert (oc->m == 1);
+  assert (oc->n == 2);
+  
+  Nasty n{1, 2};
+  Nasty m{3, 4};
+  Nasty p{5, 6};
+  
+  optional<Nasty&> on{n};
+  assert (on);
+  assert (on->m == 1);
+  assert (on->n == 2);
+  
+  on = {m};
+  assert (on);
+  assert (on->m == 3);
+  assert (on->n == 4);
+  
+  on.emplace(p);
+  assert (on);
+  assert (on->m == 5);
+  assert (on->n == 6);
+  
+  optional<Nasty&> om{emplace, n};
+  assert (om);
+  assert (om->m == 1);
+  assert (om->n == 2);
 };
 
 
@@ -1262,6 +1298,16 @@ static_assert(gorcn <= gorci, "WTF");
 static_assert(gorci == gorci, "WTF");
 static_assert(*gorci == 1, "WTF");
 static_assert(gorci == gci, "WTF");
+
+namespace constexpr_optional_ref_and_arrow 
+{
+  using namespace std::experimental;
+  constexpr Combined c{1, 2};
+  constexpr optional<Combined const&> oc = c;
+  static_assert(oc, "WTF!");
+  static_assert(oc->m == 1, "WTF!");
+  static_assert(oc->n == 2, "WTF!");
+}
 
 // end constexpr tests
 
