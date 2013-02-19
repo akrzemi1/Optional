@@ -20,6 +20,15 @@
 
 # define REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
 
+# if defined __clang__
+#  if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
+#   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
+#  else
+#   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
+#  endif
+# else
+#  define OPTIONAL_HAS_THIS_RVALUE_REFS 0
+# endif 
 
 
 namespace std{
@@ -291,8 +300,15 @@ class optional : private OptionalBase<T>
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
   T* dataptr() {  return std::addressof(OptionalBase<T>::storage_.value_); }
   constexpr const T* dataptr() const { return static_addressof(OptionalBase<T>::storage_.value_); }
+  
+# if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
+  constexpr const T& contained_val() const& { return OptionalBase<T>::storage_.value_; }
+  T& contained_val() & { return OptionalBase<T>::storage_.value_; }
+  T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
+# else
   constexpr const T& contained_val() const { return OptionalBase<T>::storage_.value_; }
   T& contained_val() { return OptionalBase<T>::storage_.value_; }
+# endif
 
   void clear() noexcept { 
     if (initialized()) dataptr()->T::~T();
@@ -440,18 +456,30 @@ public:
   
   constexpr explicit operator bool() const noexcept { return initialized(); }  
   
+# if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
+
+  template <class V>
+  constexpr T value_or(V&& v) const&
+  {
+    return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
+  }
+  
+  template <class V>
+  constexpr T value_or(V&& v) &&
+  {
+    return *this ? std::move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
+  }
+  
+# else
+
   template <class V>
   constexpr T value_or(V&& v) const
   {
     return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
   }
-  
-  // missing language feature
-  //template <class V>
-  //constexpr T value_or(V&& v) &&
-  //{
-  //  return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
-  //}
+
+# endif
+
 };
 
 

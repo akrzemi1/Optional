@@ -1076,6 +1076,31 @@ TEST(optional_ref_emulation)
 };
 
 
+# if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
+TEST(moved_on_value_or)
+{
+  using namespace tr2;
+  optional<Oracle> oo{emplace};
+  
+  assert (oo);
+  assert (oo->s == sDefaultConstructed);
+  
+  Oracle o = std::move(oo).value_or( Oracle{OracleVal{}} );
+  assert (oo);
+  assert (oo->s == sMovedFrom);
+  assert (o.s == sMoveConstructed);
+  
+  optional<MoveAware<int>> om {emplace, 1};
+  assert (om);
+  assert (om->moved == false);
+  
+  MoveAware<int> m = std::move(om).value_or( MoveAware<int>{1} );
+  assert (om);
+  assert (om->moved == true);
+};
+# endif
+
+
 TEST(optional_ref_hashing)
 {
     using namespace tr2;
@@ -1326,25 +1351,18 @@ struct VEC
 };
 
 
+
 int main() {
-    tr2::optional<int> oi = 1;
-    assert (bool(oi));
-    oi.operator=({});
-    assert (!oi);
-    std::cout << "OK" << std::endl;
+  tr2::optional<int> oi = 1;
+  assert (bool(oi));
+  oi.operator=({});
+  assert (!oi);
 
-    VEC v = {5, 6};
+  VEC v = {5, 6};
 
-    std::cout << 4 << std::endl;
-    
-  // type optional<string> is deduced
-  //tr2::optional<std::vector<int>> ov2 = {2, 3};
-
-	//std::allocator<int> a;
-  //tr2::optional<std::vector<int>> ov{ tr2::emplace, {1, 3, 5}, a };
-
-//ov = {7,8,9,0}	;
-//  std::cout << bool(ov) << " " << ov->size() << " " << (*ov)[2] << std::endl;
-
+  if (OPTIONAL_HAS_THIS_RVALUE_REFS)
+    std::cout << "has rvalue references for *this" << std::endl;
+  else
+    std::cout << "doesn't have rvalue references for *this" << std::endl;
 }
 
