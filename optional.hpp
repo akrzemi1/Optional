@@ -404,19 +404,17 @@ public:
   
   
   template <class... Args> 
-  optional<T>& emplace(Args&&... args)
+  void emplace(Args&&... args)
   {
     clear();
     initialize(std::forward<Args>(args)...);
-    return *this;
   }
   
   template <class U, class... Args> 
-  optional<T>& emplace(initializer_list<U> il, Args&&... args)
+  void emplace(initializer_list<U> il, Args&&... args)
   {
     clear();
     initialize<U, Args...>(il, std::forward<Args>(args)...);
-    return *this;
   }
   
   // 20.5.4.4 Swap
@@ -546,12 +544,11 @@ public:
   >::type
   = delete;
   
-  optional& emplace(T& v) noexcept {
+  void emplace(T& v) noexcept {
     ref = static_addressof(v);
-    return *this;
   }
   
-  optional& emplace(T&&) = delete;
+  void emplace(T&&) = delete;
   
   
   void swap(optional<T&>& rhs) noexcept
