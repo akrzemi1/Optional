@@ -93,32 +93,29 @@ bool operator==( Oracle const& a, Oracle const& b ) { return a.val.i == b.val.i;
 bool operator!=( Oracle const& a, Oracle const& b ) { return a.val.i != b.val.i; }
 
 
-namespace tr2 = std::experimental;
-
-
 TEST(disengaged_ctor)
 {
-    tr2::optional<int> o1;
+    std::optional<int> o1;
     assert (!o1);
 
-    tr2::optional<int> o2 = tr2::nullopt;
+    std::optional<int> o2 = std::nullopt;
     assert (!o2);
 
-    tr2::optional<int> o3 = o2;
+    std::optional<int> o3 = o2;
     assert (!o3);
 
-    assert (o1 == tr2::nullopt);
-    assert (o1 == tr2::optional<int>{});
+    assert (o1 == std::nullopt);
+    assert (o1 == std::optional<int>{});
     assert (!o1);
     assert (bool(o1) == false);
 
-    assert (o2 == tr2::nullopt);
-    assert (o2 == tr2::optional<int>{});
+    assert (o2 == std::nullopt);
+    assert (o2 == std::optional<int>{});
     assert (!o2);
     assert (bool(o2) == false);
 
-    assert (o3 == tr2::nullopt);
-    assert (o3 == tr2::optional<int>{});
+    assert (o3 == std::nullopt);
+    assert (o3 == std::optional<int>{});
     assert (!o3);
     assert (bool(o3) == false);
 
@@ -134,19 +131,19 @@ TEST(disengaged_ctor)
 TEST(value_ctor)
 {
   OracleVal v;
-  tr2::optional<Oracle> oo1(v);
-  assert (oo1 != tr2::nullopt);
-  assert (oo1 != tr2::optional<Oracle>{});
-  assert (oo1 == tr2::optional<Oracle>{v});
+  std::optional<Oracle> oo1(v);
+  assert (oo1 != std::nullopt);
+  assert (oo1 != std::optional<Oracle>{});
+  assert (oo1 == std::optional<Oracle>{v});
   assert (!!oo1);
   assert (bool(oo1));
   // NA: assert (oo1->s == sValueCopyConstructed);
   assert (oo1->s == sMoveConstructed);
   assert (v.s == sValueConstructed);
   
-  tr2::optional<Oracle> oo2(std::move(v));
-  assert (oo2 != tr2::nullopt);
-  assert (oo2 != tr2::optional<Oracle>{});
+  std::optional<Oracle> oo2(std::move(v));
+  assert (oo2 != std::nullopt);
+  assert (oo2 != std::optional<Oracle>{});
   assert (oo2 == oo1);
   assert (!!oo2);
   assert (bool(oo2));
@@ -156,18 +153,18 @@ TEST(value_ctor)
 
   {
       OracleVal v;
-      tr2::optional<Oracle> oo1{tr2::emplace, v};
-      assert (oo1 != tr2::nullopt);
-      assert (oo1 != tr2::optional<Oracle>{});
-      assert (oo1 == tr2::optional<Oracle>{v});
+      std::optional<Oracle> oo1{std::in_place, v};
+      assert (oo1 != std::nullopt);
+      assert (oo1 != std::optional<Oracle>{});
+      assert (oo1 == std::optional<Oracle>{v});
       assert (!!oo1);
       assert (bool(oo1));
       assert (oo1->s == sValueCopyConstructed);
       assert (v.s == sValueConstructed);
 
-      tr2::optional<Oracle> oo2{tr2::emplace, std::move(v)};
-      assert (oo2 != tr2::nullopt);
-      assert (oo2 != tr2::optional<Oracle>{});
+      std::optional<Oracle> oo2{std::in_place, std::move(v)};
+      assert (oo2 != std::nullopt);
+      assert (oo2 != std::optional<Oracle>{});
       assert (oo2 == oo1);
       assert (!!oo2);
       assert (bool(oo2));
@@ -179,11 +176,11 @@ TEST(value_ctor)
 
 TEST(assignment)
 {
-    tr2::optional<int> oi;
-    oi = tr2::optional<int>{1};
+    std::optional<int> oi;
+    oi = std::optional<int>{1};
     assert (*oi == 1);
 
-    oi = tr2::nullopt;
+    oi = std::nullopt;
     assert (!oi);
 
     oi = 2;
@@ -235,13 +232,13 @@ TEST(moved_from_state)
   assert (j.moved);
   
   // now, test optional
-  tr2::optional<MoveAware<int>> oi{1}, oj{2};
+  std::optional<MoveAware<int>> oi{1}, oj{2};
   assert (oi);
   assert (!oi->moved);
   assert (oj);
   assert (!oj->moved);
   
-  tr2::optional<MoveAware<int>> ok = std::move(oi);
+  std::optional<MoveAware<int>> ok = std::move(oi);
   assert (ok);
   assert (!ok->moved);
   assert (oi);
@@ -257,23 +254,23 @@ TEST(moved_from_state)
 
 TEST(copy_move_ctor_optional_int)
 {
-  tr2::optional<int> oi;
-  tr2::optional<int> oj = oi;
+  std::optional<int> oi;
+  std::optional<int> oj = oi;
   
   assert (!oj);
   assert (oj == oi);
-  assert (oj == tr2::nullopt);
+  assert (oj == std::nullopt);
   assert (!bool(oj));
   
   oi = 1;
-  tr2::optional<int> ok = oi;
+  std::optional<int> ok = oi;
   assert (!!ok);
   assert (bool(ok));
   assert (ok == oi);
   assert (ok != oj);
   assert (*ok == 1);
   
-  tr2::optional<int> ol = std::move(oi);
+  std::optional<int> ol = std::move(oi);
   assert (!!ol);
   assert (bool(ol));
   assert (ol == oi);
@@ -284,53 +281,53 @@ TEST(copy_move_ctor_optional_int)
 
 TEST(optional_optional)
 {
-  tr2::optional<tr2::optional<int>> oi1 = tr2::nullopt;
-  assert (oi1 == tr2::nullopt);
+  std::optional<std::optional<int>> oi1 = std::nullopt;
+  assert (oi1 == std::nullopt);
   assert (!oi1);
   
   {
-  tr2::optional<tr2::optional<int>> oi2 {tr2::emplace};
-  assert (oi2 != tr2::nullopt);
+  std::optional<std::optional<int>> oi2 {std::in_place};
+  assert (oi2 != std::nullopt);
   assert (bool(oi2));
-  assert (*oi2 == tr2::nullopt);
+  assert (*oi2 == std::nullopt);
   //assert (!(*oi2));
   //std::cout << typeid(**oi2).name() << std::endl;
   }
   
   {
-  tr2::optional<tr2::optional<int>> oi2 {tr2::emplace, tr2::nullopt};
-  assert (oi2 != tr2::nullopt);
+  std::optional<std::optional<int>> oi2 {std::in_place, std::nullopt};
+  assert (oi2 != std::nullopt);
   assert (bool(oi2));
-  assert (*oi2 == tr2::nullopt);
+  assert (*oi2 == std::nullopt);
   assert (!*oi2);
   }
   
   {
-  tr2::optional<tr2::optional<int>> oi2 {tr2::optional<int>{}};
-  assert (oi2 != tr2::nullopt);
+  std::optional<std::optional<int>> oi2 {std::optional<int>{}};
+  assert (oi2 != std::nullopt);
   assert (bool(oi2));
-  assert (*oi2 == tr2::nullopt);
+  assert (*oi2 == std::nullopt);
   assert (!*oi2);
   }
   
-  tr2::optional<int> oi;
-  auto ooi = tr2::make_optional(oi);
-  static_assert( std::is_same<tr2::optional<tr2::optional<int>>, decltype(ooi)>::value, "");
+  std::optional<int> oi;
+  auto ooi = std::make_optional(oi);
+  static_assert( std::is_same<std::optional<std::optional<int>>, decltype(ooi)>::value, "");
 
 };
 
 TEST(example_guard)
 {
-  using namespace tr2;
+  using namespace std;
   //FAILS: optional<Guard> ogx(Guard("res1")); 
   //FAILS: optional<Guard> ogx = "res1"; 
   //FAILS: optional<Guard> ogx("res1"); 
   optional<Guard> oga;                     // Guard is non-copyable (and non-moveable)     
-  optional<Guard> ogb(emplace, "res1");   // initialzes the contained value with "res1"  
+  optional<Guard> ogb(in_place, "res1");   // initialzes the contained value with "res1"  
   assert (bool(ogb));
   assert (ogb->val == "res1");
             
-  optional<Guard> ogc(emplace);           // default-constructs the contained value
+  optional<Guard> ogc(in_place);           // default-constructs the contained value
   assert (bool(ogc));
   assert (ogc->val == "");
 
@@ -356,7 +353,7 @@ void processNil(){}
 
 TEST(example1)
 {
-  using namespace tr2;
+  using namespace std;
   optional<int> oi;                 // create disengaged object
   optional<int> oj = nullopt;          // alternative syntax
   oi = oj;                          // assign disengaged object
@@ -423,7 +420,7 @@ TEST(example1)
 
 TEST(example_guard) 
 {
-  using std::experimental::optional;
+  using std::optional;
   const optional<int> c = 4; 
   int i = *c;                        // i becomes 4
   assert (i == 4);
@@ -433,7 +430,7 @@ TEST(example_guard)
 
 TEST(example_ref)
 {
-  using namespace std::experimental;
+  using namespace std;
   int i = 1;
   int j = 2;
   optional<int&> ora;                 // disengaged optional reference to int
@@ -451,7 +448,7 @@ TEST(example_ref)
 
 
 template <typename T>
-T getValue( tr2::optional<T> newVal = tr2::nullopt, tr2::optional<T&> storeHere = tr2::nullopt )
+T getValue( std::optional<T> newVal = std::nullopt, std::optional<T&> storeHere = std::nullopt )
 {
   T cached{};
   
@@ -473,8 +470,8 @@ TEST(example_optional_arg)
   iii = getValue<int>();
   
   {
-    using namespace std::experimental;
-    optional<Guard> grd1{emplace, "res1", 1};   // guard 1 initialized
+    using namespace std;
+    optional<Guard> grd1{in_place, "res1", 1};   // guard 1 initialized
     optional<Guard> grd2;
 
     grd2.emplace("res2", 2);                     // guard 2 initialized
@@ -489,7 +486,7 @@ void run(Date const&, Date const&, Date const&) {}
 
 TEST(example_date)
 {
-  using namespace std::experimental;
+  using namespace std;
   optional<Date> start, mid, end;           // Date doesn't have default ctor (no good default date)
 
   std::tie(start, mid, end) = getStartMidEnd();
@@ -497,14 +494,14 @@ TEST(example_date)
 };
 
 
-std::experimental::optional<char> readNextChar(){ return{}; }
+std::optional<char> readNextChar(){ return{}; }
 
-void run(std::experimental::optional<std::string>) {}
+void run(std::optional<std::string>) {}
 void run(std::complex<double>) {}
 
 
 template <class T>
-void assign_norebind(tr2::optional<T&>& optref, T& obj)
+void assign_norebind(std::optional<T&>& optref, T& obj)
 {
   if (optref) *optref = obj;
   else        optref.emplace(obj);
@@ -514,7 +511,7 @@ void assign_norebind(tr2::optional<T&>& optref, T& obj)
 
 TEST(example_conceptual_model)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   optional<int> oi = 0;
   optional<int> oj = 1;
@@ -531,7 +528,7 @@ TEST(example_conceptual_model)
 
 TEST(example_rationale)
 {
-  using namespace std::experimental;
+  using namespace std;
   if (optional<char> ch = readNextChar()) {
     // ...
   }
@@ -580,7 +577,7 @@ TEST(example_rationale)
   assign_norebind(asas, isas);
   
   /////////////////////////////////////
-  ////tr2::optional<std::vector<int>> ov2 = {2, 3};
+  ////std::optional<std::vector<int>> ov2 = {2, 3};
   ////assert (bool(ov2));
   ////assert ((*ov2)[1] == 3);
   ////
@@ -593,7 +590,7 @@ TEST(example_rationale)
   ////ov = {1, 2, 4, 8};
 
   ////std::allocator<int> a;
-  ////optional<std::vector<int>> ou { emplace, {1, 2, 4, 8}, a };
+  ////optional<std::vector<int>> ou { in_place, {1, 2, 4, 8}, a };
 
   ////assert (ou == ov);
 
@@ -601,7 +598,7 @@ TEST(example_rationale)
   // inconvenient syntax:
   {
     
-      tr2::optional<std::vector<int>> ov2{tr2::emplace, {2, 3}};
+      std::optional<std::vector<int>> ov2{std::in_place, {2, 3}};
     
       assert (bool(ov2));
       assert ((*ov2)[1] == 3);
@@ -609,14 +606,14 @@ TEST(example_rationale)
       ////////////////////////////
 
       std::vector<int> v = {1, 2, 4, 8};
-      optional<std::vector<int>> ov{tr2::emplace, {1, 2, 4, 8}};
+      optional<std::vector<int>> ov{std::in_place, {1, 2, 4, 8}};
 
       assert (v == *ov);
   
       ov.emplace({1, 2, 4, 8});
 /*
       std::allocator<int> a;
-      optional<std::vector<int>> ou { emplace, {1, 2, 4, 8}, a };
+      optional<std::vector<int>> ou { in_place, {1, 2, 4, 8}, a };
 
       assert (ou == ov);
 */
@@ -625,8 +622,8 @@ TEST(example_rationale)
   /////////////////////////////////
   {
   typedef int T;
-  optional<optional<T>> ot {emplace};
-  optional<optional<T>> ou {emplace, nullopt};
+  optional<optional<T>> ot {in_place};
+  optional<optional<T>> ou {in_place, nullopt};
   optional<optional<T>> ov {optional<T>{}};
   
   optional<int> oi;
@@ -636,14 +633,14 @@ TEST(example_rationale)
 };
 
 
-bool fun(std::string , std::experimental::optional<int> oi = std::experimental::nullopt) 
+bool fun(std::string , std::optional<int> oi = std::nullopt) 
 {
   return bool(oi);
 }
 
 TEST(example_converting_ctor)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   assert (true == fun("dog", 2));
   assert (false == fun("dog"));
@@ -653,7 +650,7 @@ TEST(example_converting_ctor)
 
 TEST(bad_comparison)
 {
-  tr2::optional<int> oi, oj;
+  std::optional<int> oi, oj;
   int i;
   bool b = (oi == oj);
   b = (oi >= i);
@@ -665,24 +662,24 @@ TEST(bad_comparison)
 //// NOT APPLICABLE ANYMORE
 ////TEST(perfect_ctor)
 ////{
-////  //tr2::optional<std::string> ois = "OS";
+////  //std::optional<std::string> ois = "OS";
 ////  assert (*ois == "OS");
 ////  
-////  // FAILS: tr2::optional<ExplicitStr> oes = "OS"; 
-////  tr2::optional<ExplicitStr> oes{"OS"};
+////  // FAILS: std::optional<ExplicitStr> oes = "OS"; 
+////  std::optional<ExplicitStr> oes{"OS"};
 ////  assert (oes->s == "OS");
 ////};
 
 TEST(value_or)
 {
-  tr2::optional<int> oi = 1;
+  std::optional<int> oi = 1;
   int i = oi.value_or(0);
   assert (i == 1);
   
-  oi = tr2::nullopt;
+  oi = std::nullopt;
   assert (oi.value_or(3) == 3);
   
-  tr2::optional<std::string> os{"AAA"};
+  std::optional<std::string> os{"AAA"};
   assert (os.value_or("BBB") == "AAA");
   os = {};
   assert (os.value_or("BBB") == "BBB");
@@ -690,7 +687,7 @@ TEST(value_or)
 
 TEST(mixed_order)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   optional<int> oN {nullopt};
   optional<int> o0 {0};
@@ -763,7 +760,7 @@ constexpr bool operator>(BadRelops a, BadRelops b) { return a.i < b.i; } // inte
 
 TEST(bad_relops)
 {
-  using namespace std::experimental;
+  using namespace std;
   BadRelops a{1}, b{2};
   assert (a < b);
   assert (a > b);
@@ -786,7 +783,7 @@ TEST(bad_relops)
 
 TEST(mixed_equality)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   assert (make_optional(0) == 0);
   assert (make_optional(1) == 1);
@@ -839,7 +836,7 @@ TEST(mixed_equality)
 
 TEST(const_propagation)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   optional<int> mmi{0};
   static_assert(std::is_same<decltype(*mmi), int&>::value, "WTF");
@@ -855,11 +852,11 @@ TEST(const_propagation)
 };
 
 
-static_assert(std::is_base_of<std::logic_error, std::experimental::bad_optional_access>::value, "");
+static_assert(std::is_base_of<std::logic_error, std::bad_optional_access>::value, "");
 
 TEST(safe_value)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   try {
     optional<int> ovN{}, ov1{1};
@@ -896,7 +893,7 @@ TEST(safe_value)
 
 TEST(optional_ref)
 {
-  using namespace tr2;
+  using namespace std;
   // FAILS: optional<int&&> orr;
   // FAILS: optional<nullopt_t&> on;
   int i = 8;
@@ -924,7 +921,7 @@ TEST(optional_ref)
 
 TEST(optional_ref_const_propagation)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   int i = 9;
   const optional<int&> mi = i;
@@ -938,7 +935,7 @@ TEST(optional_ref_const_propagation)
 
 TEST(optional_ref_assign)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   int i = 9;
   optional<int&> ori = i;
@@ -978,7 +975,7 @@ TEST(optional_ref_assign)
 
 TEST(optional_ref_swap)
 {
-  using namespace std::experimental;
+  using namespace std;
   int i = 0;
   int j = 1;
   optional<int&> oi = i;
@@ -994,7 +991,7 @@ TEST(optional_ref_swap)
 
 TEST(optional_initialization)
 {
-    using namespace tr2;
+    using namespace std;
     using std::string;
     string s = "STR";
 
@@ -1009,7 +1006,7 @@ TEST(optional_initialization)
 
 TEST(optional_hashing)
 {
-    using namespace tr2;
+    using namespace std;
     using std::string;
     
     std::hash<int> hi;
@@ -1055,13 +1052,13 @@ using Generic = typename generic<T>::type;
 template <class X>
 bool generic_fun()
 {
-  std::experimental::optional<Generic<X>> op;
+  std::optional<Generic<X>> op;
   return bool(op);
 }
 
 TEST(optional_ref_emulation)
 {
-  using namespace std::experimental;
+  using namespace std;
   optional<Generic<int>> oi = 1;
   assert (*oi == 1);
   
@@ -1079,7 +1076,7 @@ TEST(optional_ref_emulation)
 # if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
 TEST(moved_on_value_or)
 {
-  using namespace tr2;
+  using namespace std;
   optional<Oracle> oo{emplace};
   
   assert (oo);
@@ -1090,7 +1087,7 @@ TEST(moved_on_value_or)
   assert (oo->s == sMovedFrom);
   assert (o.s == sMoveConstructed);
   
-  optional<MoveAware<int>> om {emplace, 1};
+  optional<MoveAware<int>> om {in_place, 1};
   assert (om);
   assert (om->moved == false);
   
@@ -1103,7 +1100,7 @@ TEST(moved_on_value_or)
 
 TEST(optional_ref_hashing)
 {
-    using namespace tr2;
+    using namespace std;
     using std::string;
     
     std::hash<int> hi;
@@ -1156,14 +1153,14 @@ struct Nasty
 
 TEST(arrow_operator)
 {
-  using namespace std::experimental;
+  using namespace std;
   
-  optional<Combined> oc1{emplace, 1, 2};
+  optional<Combined> oc1{in_place, 1, 2};
   assert (oc1);
   assert (oc1->m == 1);
   assert (oc1->n == 2);
   
-  optional<Nasty> on{emplace, 1, 2};
+  optional<Nasty> on{in_place, 1, 2};
   assert (on);
   assert (on->m == 1);
   assert (on->n == 2);
@@ -1171,7 +1168,7 @@ TEST(arrow_operator)
 
 TEST(arrow_wit_optional_ref)
 {
-  using namespace std::experimental;
+  using namespace std;
   
   Combined c{1, 2};
   optional<Combined&> oc = c;
@@ -1198,7 +1195,7 @@ TEST(arrow_wit_optional_ref)
   assert (on->m == 5);
   assert (on->n == 6);
   
-  optional<Nasty&> om{emplace, n};
+  optional<Nasty&> om{in_place, n};
   assert (om);
   assert (om->m == 1);
   assert (om->n == 2);
@@ -1228,23 +1225,23 @@ struct NothrowNone {
 void test_noexcept()
 {
   {
-    tr2::optional<NothrowBoth> b1, b2;
-    static_assert(noexcept(tr2::optional<NothrowBoth>{std::move(b1)}), "bad noexcept!");
+    std::optional<NothrowBoth> b1, b2;
+    static_assert(noexcept(std::optional<NothrowBoth>{std::move(b1)}), "bad noexcept!");
     static_assert(noexcept(b1 = std::move(b2)), "bad noexcept!");
   }
   {
-    tr2::optional<NothrowCtor> c1, c2;
-    static_assert(noexcept(tr2::optional<NothrowCtor>{std::move(c1)}), "bad noexcept!");
+    std::optional<NothrowCtor> c1, c2;
+    static_assert(noexcept(std::optional<NothrowCtor>{std::move(c1)}), "bad noexcept!");
     static_assert(!noexcept(c1 = std::move(c2)), "bad noexcept!");
   }
   {
-    tr2::optional<NothrowAssign> a1, a2;
-    static_assert(!noexcept(tr2::optional<NothrowAssign>{std::move(a1)}), "bad noexcept!");
+    std::optional<NothrowAssign> a1, a2;
+    static_assert(!noexcept(std::optional<NothrowAssign>{std::move(a1)}), "bad noexcept!");
     static_assert(!noexcept(a1 = std::move(a2)), "bad noexcept!");
   }
   {
-    tr2::optional<NothrowNone> n1, n2;
-    static_assert(!noexcept(tr2::optional<NothrowNone>{std::move(n1)}), "bad noexcept!");
+    std::optional<NothrowNone> n1, n2;
+    static_assert(!noexcept(std::optional<NothrowNone>{std::move(n1)}), "bad noexcept!");
     static_assert(!noexcept(n1 = std::move(n2)), "bad noexcept!");
   }
 }
@@ -1252,8 +1249,8 @@ void test_noexcept()
 
 void constexpr_test_disengaged()
 {
-  constexpr tr2::optional<int> g0{};
-  constexpr tr2::optional<int> g1{tr2::nullopt};
+  constexpr std::optional<int> g0{};
+  constexpr std::optional<int> g1{std::nullopt};
   static_assert( !g0, "initialized!" );
   static_assert( !g1, "initialized!" );
   
@@ -1266,57 +1263,57 @@ void constexpr_test_disengaged()
   static_assert( g1 <= g0, "ne!" );
   static_assert( !(g1 <g0), "ne!" );
   
-  static_assert( g1 == tr2::nullopt, "!" );
-  static_assert( !(g1 != tr2::nullopt), "!" );
-  static_assert( g1 <= tr2::nullopt, "!" );
-  static_assert( !(g1 < tr2::nullopt), "!" );
-  static_assert( g1 >= tr2::nullopt, "!" );
-  static_assert( !(g1 > tr2::nullopt), "!" );
+  static_assert( g1 == std::nullopt, "!" );
+  static_assert( !(g1 != std::nullopt), "!" );
+  static_assert( g1 <= std::nullopt, "!" );
+  static_assert( !(g1 < std::nullopt), "!" );
+  static_assert( g1 >= std::nullopt, "!" );
+  static_assert( !(g1 > std::nullopt), "!" );
   
-  static_assert(  (tr2::nullopt == g0), "!" );
-  static_assert( !(tr2::nullopt != g0), "!" );
-  static_assert(  (tr2::nullopt >= g0), "!" );
-  static_assert( !(tr2::nullopt >  g0), "!" );
-  static_assert(  (tr2::nullopt <= g0), "!" );
-  static_assert( !(tr2::nullopt <  g0), "!" );
+  static_assert(  (std::nullopt == g0), "!" );
+  static_assert( !(std::nullopt != g0), "!" );
+  static_assert(  (std::nullopt >= g0), "!" );
+  static_assert( !(std::nullopt >  g0), "!" );
+  static_assert(  (std::nullopt <= g0), "!" );
+  static_assert( !(std::nullopt <  g0), "!" );
   
-  static_assert(  (g1 != tr2::optional<int>(1)), "!" );
-  static_assert( !(g1 == tr2::optional<int>(1)), "!" );
-  static_assert(  (g1 <  tr2::optional<int>(1)), "!" );
-  static_assert(  (g1 <= tr2::optional<int>(1)), "!" );
-  static_assert( !(g1 >  tr2::optional<int>(1)), "!" );
-  static_assert( !(g1 >  tr2::optional<int>(1)), "!" );
+  static_assert(  (g1 != std::optional<int>(1)), "!" );
+  static_assert( !(g1 == std::optional<int>(1)), "!" );
+  static_assert(  (g1 <  std::optional<int>(1)), "!" );
+  static_assert(  (g1 <= std::optional<int>(1)), "!" );
+  static_assert( !(g1 >  std::optional<int>(1)), "!" );
+  static_assert( !(g1 >  std::optional<int>(1)), "!" );
 }
 
 
-constexpr tr2::optional<int> g0{};
-constexpr tr2::optional<int> g2{2};
+constexpr std::optional<int> g0{};
+constexpr std::optional<int> g2{2};
 static_assert( g2, "not initialized!" );
 static_assert( *g2 == 2, "not 2!" );
-static_assert( g2 == tr2::optional<int>(2), "not 2!" );
+static_assert( g2 == std::optional<int>(2), "not 2!" );
 static_assert( g2 != g0, "eq!" );
 
 
 
 
 
-constexpr tr2::optional<Combined> gc0{tr2::emplace};
+constexpr std::optional<Combined> gc0{std::in_place};
 static_assert(gc0->n == 6, "WTF!");
 
 // optional refs
 int gi = 0;
-constexpr tr2::optional<int&> gori = gi;
-constexpr tr2::optional<int&> gorn{};
+constexpr std::optional<int&> gori = gi;
+constexpr std::optional<int&> gorn{};
 constexpr int& gri = *gori;
 static_assert(gori, "WTF");
 static_assert(!gorn, "WTF");
-static_assert(gori != tr2::nullopt, "WTF");
-static_assert(gorn == tr2::nullopt, "WTF");
+static_assert(gori != std::nullopt, "WTF");
+static_assert(gorn == std::nullopt, "WTF");
 static_assert(&gri == &*gori, "WTF");
 
 constexpr int gci = 1;
-constexpr tr2::optional<int const&> gorci = gci;
-constexpr tr2::optional<int const&> gorcn{};
+constexpr std::optional<int const&> gorci = gci;
+constexpr std::optional<int const&> gorcn{};
 
 static_assert(gorcn <  gorci, "WTF");
 static_assert(gorcn <= gorci, "WTF");
@@ -1326,7 +1323,7 @@ static_assert(gorci == gci, "WTF");
 
 namespace constexpr_optional_ref_and_arrow 
 {
-  using namespace std::experimental;
+  using namespace std;
   constexpr Combined c{1, 2};
   constexpr optional<Combined const&> oc = c;
   static_assert(oc, "WTF!");
@@ -1353,7 +1350,7 @@ struct VEC
 
 
 int main() {
-  tr2::optional<int> oi = 1;
+  std::optional<int> oi = 1;
   assert (bool(oi));
   oi.operator=({});
   assert (!oi);
