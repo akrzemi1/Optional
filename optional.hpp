@@ -34,12 +34,21 @@
 namespace std{
 
 
-
-# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
-    // leave it; our metafunctions are already defined.
-# elif defined __clang__
+# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8)
     // leave it; our metafunctions are already defined.
 # else
+
+
+// the only bit GCC 4.7 and clang(?) don't have
+template <class T>
+using is_trivially_destructible = typename std::has_trivial_destructor<T>;
+
+
+#  if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
+    // leave it; remaining metafunctions are already defined.
+#  elif defined __clang__
+    // leave it; remaining metafunctions are already defined.
+#  else
 
 
 // workaround for missing traits in GCC and CLANG
@@ -81,8 +90,8 @@ struct is_nothrow_move_assignable
 // end workaround
 
 
-# endif   
-
+#  endif // not as good as GCC 4.7
+# endif // not as good as GCC 4.8
 
 
 
@@ -282,7 +291,7 @@ struct constexpr_optional_base
 
 template <class T> 
 using OptionalBase = typename std::conditional<
-    std::has_trivial_destructor<T>::value, 
+    std::is_trivially_destructible<T>::value, 
     constexpr_optional_base<T>,
     optional_base<T>
 >::type;
