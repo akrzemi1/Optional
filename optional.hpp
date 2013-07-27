@@ -21,36 +21,43 @@
 # define REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
 
 # if defined __clang__
+#  define OPTIONAL_HAS_USING 1
 #  if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
 #  else
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
 #  endif
 # elif defined __GNUC__
-#  if (__GNUC__ >= 4) && (__GNUC_MINOR__ > 8 || ((__GNUC_MINOR__ >= 8) && (__GNUC_PATCHLEVEL__ >= 1)))
+#  if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7))
+#   define OPTIONAL_HAS_USING 1
+#  else
+#   define OPTIONAL_HAS_USING 0
+#  endif
+#  if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ > 8 || ((__GNUC_MINOR__ == 8) && (__GNUC_PATCHLEVEL__ >= 1))))
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
 #  else
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
 #  endif
 # else
 #  define OPTIONAL_HAS_THIS_RVALUE_REFS 0
+#  define OPTIONAL_HAS_USING 0
 # endif 
 
 
 namespace std{
 
 
-# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8)
+# if (defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)))
     // leave it; our metafunctions are already defined.
 # else
 
-
+#  if OPTIONAL_HAS_USING
 // the only bit GCC 4.7 and clang(?) don't have
 template <class T>
 using is_trivially_destructible = typename std::has_trivial_destructor<T>;
+#  endif
 
-
-#  if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
+#  if (defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
     // leave it; remaining metafunctions are already defined.
 #  elif defined __clang__
     // leave it; remaining metafunctions are already defined.
@@ -295,14 +302,16 @@ struct constexpr_optional_base
     ~constexpr_optional_base() = default;
 };
 
+# if OPTIONAL_HAS_USING
 template <class T> 
 using OptionalBase = typename std::conditional<
     std::is_trivially_destructible<T>::value, 
     constexpr_optional_base<T>,
     optional_base<T>
 >::type;
-
-
+# else
+#  define OptionalBase optional_base
+# endif
 
 template <class T>
 class optional : private OptionalBase<T>
@@ -930,6 +939,8 @@ namespace std
   };
 }
 
-
+#ifdef OptionalBase
+# undef OptionalBase
+#endif
 
 # endif //___OPTIONAL_HPP___
