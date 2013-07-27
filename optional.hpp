@@ -34,12 +34,21 @@
 namespace std{
 
 
-
-# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
-    // leave it; our metafunctions are already defined.
-# elif defined __clang__
+# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8)
     // leave it; our metafunctions are already defined.
 # else
+
+
+// the only bit GCC 4.7 and clang(?) don't have
+template <class T>
+using is_trivially_destructible = typename std::has_trivial_destructor<T>;
+
+
+#  if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
+    // leave it; remaining metafunctions are already defined.
+#  elif defined __clang__
+    // leave it; remaining metafunctions are already defined.
+#  else
 
 
 // workaround for missing traits in GCC and CLANG
@@ -81,10 +90,9 @@ struct is_nothrow_move_assignable
 // end workaround
 
 
-# endif   
+#  endif // not as good as GCC 4.7
+# endif // not as good as GCC 4.8
 
-
-namespace experimental{
 
 
 // 20.5.4, optional for object types
@@ -179,7 +187,7 @@ constexpr struct trivial_init_t{} trivial_init{};
 
 
 // 20.5.6, In-place construction
-constexpr struct emplace_t{} emplace{};
+constexpr struct in_place_t{} in_place{};
 
 
 // 20.5.7, Disengaged state indicator
@@ -246,11 +254,11 @@ struct optional_base
 
     explicit constexpr optional_base(T&& v) : init_(true), storage_(constexpr_move(v)) {}
 
-    template <class... Args> explicit optional_base(emplace_t, Args&&... args)
+    template <class... Args> explicit optional_base(in_place_t, Args&&... args)
         : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit optional_base(emplace_t, std::initializer_list<U> il, Args&&... args)
+    explicit optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
         : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~optional_base() { if (init_) storage_.value_.T::~T(); }
@@ -271,11 +279,11 @@ struct constexpr_optional_base
 
     explicit constexpr constexpr_optional_base(T&& v) : init_(true), storage_(constexpr_move(v)) {}
 
-    template <class... Args> explicit constexpr constexpr_optional_base(emplace_t, Args&&... args)
+    template <class... Args> explicit constexpr constexpr_optional_base(in_place_t, Args&&... args)
       : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit constexpr_optional_base(emplace_t, std::initializer_list<U> il, Args&&... args)
+    explicit constexpr_optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
       : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~constexpr_optional_base() = default;
@@ -283,7 +291,7 @@ struct constexpr_optional_base
 
 template <class T> 
 using OptionalBase = typename std::conditional<
-    std::has_trivial_destructor<T>::value, 
+    std::is_trivially_destructible<T>::value, 
     constexpr_optional_base<T>,
     optional_base<T>
 >::type;
@@ -294,7 +302,7 @@ template <class T>
 class optional : private OptionalBase<T>
 {
   static_assert( !std::is_same<typename std::decay<T>::type, nullopt_t>::value, "bad T" );
-  static_assert( !std::is_same<typename std::decay<T>::type, emplace_t>::value, "bad T" );
+  static_assert( !std::is_same<typename std::decay<T>::type, in_place_t>::value, "bad T" );
   
 
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
@@ -355,12 +363,12 @@ public:
   constexpr optional(T&& v) : OptionalBase<T>(constexpr_move(v)) {}
 
   template <class... Args> 
-    constexpr explicit optional(emplace_t, Args&&... args)
-        : OptionalBase<T>(emplace_t{}, constexpr_forward<Args>(args)...) {}
+    constexpr explicit optional(in_place_t, Args&&... args)
+        : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit optional(emplace_t, std::initializer_list<U> il, Args&&... args)
-        : OptionalBase<T>(emplace_t{}, il, constexpr_forward<Args>(args)...) {}
+    explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
+        : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
   // 20.5.4.2 Destructor 
   ~optional() = default;
@@ -404,19 +412,17 @@ public:
   
   
   template <class... Args> 
-  optional<T>& emplace(Args&&... args)
+  void emplace(Args&&... args)
   {
     clear();
     initialize(std::forward<Args>(args)...);
-    return *this;
   }
   
   template <class U, class... Args> 
-  optional<T>& emplace(initializer_list<U> il, Args&&... args)
+  void emplace(initializer_list<U> il, Args&&... args)
   {
     clear();
     initialize<U, Args...>(il, std::forward<Args>(args)...);
-    return *this;
   }
   
   // 20.5.4.4 Swap
@@ -487,7 +493,7 @@ template <class T>
 class optional<T&>
 {
   static_assert( !std::is_same<T, nullopt_t>::value, "bad T" );
-  static_assert( !std::is_same<T, emplace_t>::value, "bad T" );
+  static_assert( !std::is_same<T, in_place_t>::value, "bad T" );
   T* ref;
   
 public:
@@ -503,9 +509,9 @@ public:
   
   constexpr optional(const optional& rhs) noexcept : ref(rhs.ref) {}
   
-  explicit constexpr optional(emplace_t, T& v) noexcept : ref(static_addressof(v)) {}
+  explicit constexpr optional(in_place_t, T& v) noexcept : ref(static_addressof(v)) {}
   
-  explicit optional(emplace_t, T&&) = delete;
+  explicit optional(in_place_t, T&&) = delete;
   
   ~optional() = default;
   
@@ -546,12 +552,11 @@ public:
   >::type
   = delete;
   
-  optional& emplace(T& v) noexcept {
+  void emplace(T& v) noexcept {
     ref = static_addressof(v);
-    return *this;
   }
   
-  optional& emplace(T&&) = delete;
+  void emplace(T&&) = delete;
   
   
   void swap(optional<T&>& rhs) noexcept
@@ -892,16 +897,15 @@ constexpr optional<X&> make_optional(reference_wrapper<X> v)
 }
 
 
-} // namespace experimental
 } // namespace std
 
 namespace std
 {
   template <typename T> 
-  struct hash<std::experimental::optional<T>>
+  struct hash<std::optional<T>>
   {
     typedef typename hash<T>::result_type result_type;
-    typedef std::experimental::optional<T> argument_type;
+    typedef std::optional<T> argument_type;
     
     constexpr result_type operator()(argument_type const& arg) const {
       return arg ? std::hash<T>{}(*arg) : result_type{};
@@ -909,10 +913,10 @@ namespace std
   };
   
   template <typename T> 
-  struct hash<std::experimental::optional<T&>>
+  struct hash<std::optional<T&>>
   {
     typedef typename hash<T>::result_type result_type;
-    typedef std::experimental::optional<T&> argument_type;
+    typedef std::optional<T&> argument_type;
     
     constexpr result_type operator()(argument_type const& arg) const {
       return arg ? std::hash<T>{}(*arg) : result_type{};
