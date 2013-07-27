@@ -27,7 +27,7 @@
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
 #  endif
 # elif defined __GNUC__
-#  if (__GNUC__ >= 4) && (__GNUC_MINOR__ > 8 || ((__GNUC_MINOR__ >= 8) && (__GNUC_PATCHLEVEL__ >= 1)))
+#  if (__GNUC__ > 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ > 8 || ((__GNUC_MINOR__ == 8) && (__GNUC_PATCHLEVEL__ >= 1))))
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
 #  else
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
