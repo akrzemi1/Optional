@@ -1077,7 +1077,7 @@ TEST(optional_ref_emulation)
 TEST(moved_on_value_or)
 {
   using namespace std;
-  optional<Oracle> oo{emplace};
+  optional<Oracle> oo{in_place};
   
   assert (oo);
   assert (oo->s == sDefaultConstructed);
