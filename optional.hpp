@@ -42,10 +42,11 @@ namespace std{
 
 # if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8)
     // leave it; our metafunctions are already defined.
+# elif (defined __clang__) && ((__clang_major__ > 3) || (__clang_major__ == 3) && (__clang_minor__ >= 3))
+    // leave it; our metafunctions are already defined.
 # else
 
-
-// the only bit GCC 4.7 and clang(?) don't have
+// the only bit GCC 4.7 and clang 3.2 don't have
 template <class T>
 using is_trivially_destructible = typename std::has_trivial_destructor<T>;
 
