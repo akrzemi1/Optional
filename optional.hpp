@@ -471,7 +471,7 @@ public:
   }
   
   template <class V>
-  constexpr T value_or(V&& v) &&
+  T value_or(V&& v) &&
   {
     return *this ? std::move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
   }
