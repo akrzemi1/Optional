@@ -7,7 +7,7 @@ A library for optional (nullable) objects for C++11. This is the reference imple
 Supported compilers
 -------------------
 
-Clang 3.2, G++ 4.6+
+Clang 3.2, GCC 4.6+
 
 
 Usage
@@ -20,4 +20,5 @@ Differences from N3527
 ----------------------
 
  - The constructor taking `initializer_list` argument is not `constexpr`. This is because `initializer_list` operations are not `constexpr` in C++11.
- - Member function `value_or` does not have rvalue reference overload in GCC. This is because rvalue overloding on `*this` is not supported in GCC 4.7.2. 
+ - In GCC versions up to, but not including, 4.8.1, member function `value_or` does not have rvalue reference overload. This is because rvalue overloading on `*this` is not supported in these versions of GCC.
+ - In GCC 4.6, `optional<T>` isn't a literal type even for trivially destructible T's. This is because of a GCC bug which causes a crash when compiling with the proposed implementation.
