@@ -125,11 +125,6 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
     return static_cast<typename std::remove_reference<T>::type&&>(t);
 }
 
-template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
-{
-    return ((_Ty *) &(char&)_Val);
-}
-
 
 #if defined NDEBUG
 # define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
