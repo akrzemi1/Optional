@@ -1066,7 +1066,7 @@ TEST(optional_ref_emulation)
   int j = 4;
   optional<Generic<int&>> ori {i};
   assert (*ori == 8);
-  assert ((void*)&*ori != (void*)&i); // !DIFFERENT THAN optional<T&>
+  assert (static_cast<void*>(&*ori) != static_cast<void*>(&i)); // !DIFFERENT THAN optional<T&>
 
   *ori = j;
   assert (*ori == 4);
