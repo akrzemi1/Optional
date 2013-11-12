@@ -145,7 +145,7 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
   inline void fail(const char* expr, const char* file, unsigned line)
   {
   # if defined __clang__ || defined __GNU_LIBRARY__
-    __assert(expr, file, line);
+    __assert(expr, file, static_cast<int>(line));
   # elif defined __GNUC__
     _assert(expr, file, line);
   # else
