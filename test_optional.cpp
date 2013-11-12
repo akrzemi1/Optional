@@ -1337,25 +1337,11 @@ namespace constexpr_optional_ref_and_arrow
 #include <string>
 
 
-struct VEC
-{
-    std::vector<int> v;
-    template <typename... X>
-    VEC( X&&...x) : v(std::forward<X>(x)...) {}
-
-    template <typename U, typename... X>
-    VEC(std::initializer_list<U> il, X&&...x) : v(il, std::forward<X>(x)...) {}
-};
-
-
-
 int main() {
   std::optional<int> oi = 1;
   assert (bool(oi));
   oi.operator=({});
   assert (!oi);
-
-  VEC v = {5, 6};
 
   if (OPTIONAL_HAS_THIS_RVALUE_REFS)
     std::cout << "has rvalue references for *this" << std::endl;
