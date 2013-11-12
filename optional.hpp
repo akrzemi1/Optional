@@ -134,7 +134,7 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 
 template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 {
-    return ((_Ty *) &(char&)_Val);
+    return static_cast<_Ty *>(&static_cast<char&>(_Val));
 }
 
 
