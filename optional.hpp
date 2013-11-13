@@ -47,7 +47,9 @@
 namespace std{
 
 
-# if (defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)))
+# if \
+    ((defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)))) || \
+    ((defined __clang__) && ((__clang_major__ >= 3) && (__clang_minor__ >= 3)))
     // leave it; our metafunctions are already defined.
 # else
 
