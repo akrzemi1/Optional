@@ -1093,6 +1093,7 @@ TEST(moved_on_value_or)
   assert (om->moved == false);
   
   MoveAware<int> m = std::move(om).value_or( MoveAware<int>{1} );
+  static_cast<void>(m);
   assert (om);
   assert (om->moved == true);
 };
