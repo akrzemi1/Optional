@@ -47,7 +47,9 @@
 namespace std{
 
 
-# if (defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)))
+# if \
+    ((defined __GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)))) || \
+    ((defined __clang__) && ((__clang_major__ >= 3) && (__clang_minor__ >= 3)))
     // leave it; our metafunctions are already defined.
 # else
 
@@ -134,7 +136,7 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 
 template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
 {
-    return ((_Ty *) &(char&)_Val);
+    return static_cast<_Ty *>(&static_cast<char&>(_Val));
 }
 
 
@@ -145,7 +147,7 @@ template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
   inline void fail(const char* expr, const char* file, unsigned line)
   {
   # if defined __clang__ || defined __GNU_LIBRARY__
-    __assert(expr, file, line);
+    __assert(expr, file, static_cast<int>(line));
   # elif defined __GNUC__
     _assert(expr, file, line);
   # else

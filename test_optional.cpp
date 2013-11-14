@@ -41,7 +41,7 @@ struct OracleVal
 {
     State s;
     int i;
-    OracleVal(int i = 0) : s(sValueConstructed), i(i) {}
+    OracleVal(int init = 0) : s(sValueConstructed), i(init) {}
 };
 
 struct Oracle
@@ -82,7 +82,7 @@ struct Date
 {
     int i;
     Date() = delete;
-    Date(int i) : i{i} {};
+    Date(int value) : i{value} {};
     Date(Date&& d) : i(d.i) { d.i = 0; }
     Date(const Date&) = delete;
     Date& operator=(const Date&) = delete;
@@ -130,46 +130,47 @@ TEST(disengaged_ctor)
 
 TEST(value_ctor)
 {
-  OracleVal v;
-  std::optional<Oracle> oo1(v);
-  assert (oo1 != std::nullopt);
-  assert (oo1 != std::optional<Oracle>{});
-  assert (oo1 == std::optional<Oracle>{v});
-  assert (!!oo1);
-  assert (bool(oo1));
-  // NA: assert (oo1->s == sValueCopyConstructed);
-  assert (oo1->s == sMoveConstructed);
-  assert (v.s == sValueConstructed);
-  
-  std::optional<Oracle> oo2(std::move(v));
-  assert (oo2 != std::nullopt);
-  assert (oo2 != std::optional<Oracle>{});
-  assert (oo2 == oo1);
-  assert (!!oo2);
-  assert (bool(oo2));
-  // NA: assert (oo2->s == sValueMoveConstructed);
-  assert (oo2->s == sMoveConstructed);
-  assert (v.s == sMovedFrom);
-
   {
-      OracleVal v;
-      std::optional<Oracle> oo1{std::in_place, v};
-      assert (oo1 != std::nullopt);
-      assert (oo1 != std::optional<Oracle>{});
-      assert (oo1 == std::optional<Oracle>{v});
-      assert (!!oo1);
-      assert (bool(oo1));
-      assert (oo1->s == sValueCopyConstructed);
-      assert (v.s == sValueConstructed);
+    OracleVal v;
+    std::optional<Oracle> oo1(v);
+    assert (oo1 != std::nullopt);
+    assert (oo1 != std::optional<Oracle>{});
+    assert (oo1 == std::optional<Oracle>{v});
+    assert (!!oo1);
+    assert (bool(oo1));
+    // NA: assert (oo1->s == sValueCopyConstructed);
+    assert (oo1->s == sMoveConstructed);
+    assert (v.s == sValueConstructed);
 
-      std::optional<Oracle> oo2{std::in_place, std::move(v)};
-      assert (oo2 != std::nullopt);
-      assert (oo2 != std::optional<Oracle>{});
-      assert (oo2 == oo1);
-      assert (!!oo2);
-      assert (bool(oo2));
-      assert (oo2->s == sValueMoveConstructed);
-      assert (v.s == sMovedFrom);
+    std::optional<Oracle> oo2(std::move(v));
+    assert (oo2 != std::nullopt);
+    assert (oo2 != std::optional<Oracle>{});
+    assert (oo2 == oo1);
+    assert (!!oo2);
+    assert (bool(oo2));
+    // NA: assert (oo2->s == sValueMoveConstructed);
+    assert (oo2->s == sMoveConstructed);
+    assert (v.s == sMovedFrom);
+  }
+  {
+    OracleVal v;
+    std::optional<Oracle> oo1{std::in_place, v};
+    assert (oo1 != std::nullopt);
+    assert (oo1 != std::optional<Oracle>{});
+    assert (oo1 == std::optional<Oracle>{v});
+    assert (!!oo1);
+    assert (bool(oo1));
+    assert (oo1->s == sValueCopyConstructed);
+    assert (v.s == sValueConstructed);
+
+    std::optional<Oracle> oo2{std::in_place, std::move(v)};
+    assert (oo2 != std::nullopt);
+    assert (oo2 != std::optional<Oracle>{});
+    assert (oo2 == oo1);
+    assert (!!oo2);
+    assert (bool(oo2));
+    assert (oo2->s == sValueMoveConstructed);
+    assert (v.s == sMovedFrom);
   }
 };
 
@@ -196,7 +197,7 @@ struct MoveAware
 {
   T val;
   bool moved;
-  MoveAware(T val) : val(val), moved(false) {}
+  MoveAware(T value) : val(value), moved(false) {}
   MoveAware(MoveAware const&) = delete;
   MoveAware(MoveAware&& rhs) : val(rhs.val), moved(rhs.moved) {
     rhs.moved = true;
@@ -1066,7 +1067,7 @@ TEST(optional_ref_emulation)
   int j = 4;
   optional<Generic<int&>> ori {i};
   assert (*ori == 8);
-  assert ((void*)&*ori != (void*)&i); // !DIFFERENT THAN optional<T&>
+  assert (static_cast<void*>(&*ori) != static_cast<void*>(&i)); // !DIFFERENT THAN optional<T&>
 
   *ori = j;
   assert (*ori == 4);
@@ -1092,6 +1093,7 @@ TEST(moved_on_value_or)
   assert (om->moved == false);
   
   MoveAware<int> m = std::move(om).value_or( MoveAware<int>{1} );
+  static_cast<void>(m);
   assert (om);
   assert (om->moved == true);
 };
@@ -1136,7 +1138,7 @@ struct Combined
   int n = 1;
   
   constexpr Combined() : m{5}, n{6} {}
-  constexpr Combined(int m, int n) : m{m}, n{n} {}
+  constexpr Combined(int m_, int n_) : m{m_}, n{n_} {}
 };
 
 struct Nasty
@@ -1145,7 +1147,7 @@ struct Nasty
   int n = 1;
   
   constexpr Nasty() : m{5}, n{6} {}
-  constexpr Nasty(int m, int n) : m{m}, n{n} {}
+  constexpr Nasty(int m_, int n_) : m{m_}, n{n_} {}
   
   int operator&() { return n; }
   int operator&() const { return n; }
@@ -1337,25 +1339,11 @@ namespace constexpr_optional_ref_and_arrow
 #include <string>
 
 
-struct VEC
-{
-    std::vector<int> v;
-    template <typename... X>
-    VEC( X&&...x) : v(std::forward<X>(x)...) {}
-
-    template <typename U, typename... X>
-    VEC(std::initializer_list<U> il, X&&...x) : v(il, std::forward<X>(x)...) {}
-};
-
-
-
 int main() {
   std::optional<int> oi = 1;
   assert (bool(oi));
   oi.operator=({});
   assert (!oi);
-
-  VEC v = {5, 6};
 
   if (OPTIONAL_HAS_THIS_RVALUE_REFS)
     std::cout << "has rvalue references for *this" << std::endl;
