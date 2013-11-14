@@ -22,8 +22,8 @@ struct Safe
     Safe( Safe const & ){}
     Safe( Safe && ) noexcept {}
     
-    Safe & operator=( Safe const & ){}
-    Safe & operator=( Safe && ) noexcept {}
+    Safe & operator=( Safe const & ){ return *this; }
+    Safe & operator=( Safe && ) noexcept { return *this; }
 };
 
 struct Unsafe
@@ -32,8 +32,8 @@ struct Unsafe
     Unsafe( Unsafe const & ){}
     Unsafe( Unsafe && ){}
     
-    Unsafe & operator=( Unsafe const & ){}
-    Unsafe & operator=( Unsafe && ) {}
+    Unsafe & operator=( Unsafe const & ){ return *this; }
+    Unsafe & operator=( Unsafe && ) { return *this; }
 };
 
 
