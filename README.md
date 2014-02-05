@@ -29,4 +29,4 @@ Differences from N3527
 ----------------------
 
  - The constructor taking `initializer_list` argument is not `constexpr`. This is because `initializer_list` operations are not `constexpr` in C++11.
- - Member function `value_or` does not have rvalue reference overload in GCC. This is because rvalue overloding on `*this` is not supported in GCC 4.7.2. 
+ - In G++ 4.7.2 and 4.8.0 member function `value_or` does not have rvalue reference overload. These compilers do not support rvalue overloding on `*this`. 
