@@ -20,20 +20,48 @@
 
 # define REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
 
+# if defined __GNUC__
+#   if (__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)
+#     define TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
+#   elif (__GNUC__ > 4)
+#     define TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
+#   endif
+#
+#   if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8) && (__GNUC_PATCHLEVEL__ >= 1)
+#     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
+#   elif (__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)
+#     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
+#   elif (__GNUC__ > 4)
+#     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
+#   endif
+# endif
+
+
+
 # if defined __clang__
-#  if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
+#   if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
+#     define OPTIONAL_HAS_THIS_RVALUE_REFS 1
+#   else
+#     define OPTIONAL_HAS_THIS_RVALUE_REFS 0
+#   endif
+# elif defined TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
-#  else
-#   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
-#  endif
 # else
-#  define OPTIONAL_HAS_THIS_RVALUE_REFS 0
+#   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
 # endif 
+
 
 
 namespace std{
 
-
+// BEGIN workaround for missing is_trivially_destructible
+# if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
+    // leave it: it is already there
+# else
+	template <typename T>
+	using is_trivially_destructible = has_trivial_destructor<T>;
+# endif
+// END workaround for missing is_trivially_destructible
 
 # if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
     // leave it; our metafunctions are already defined.
@@ -111,11 +139,6 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
     return static_cast<typename std::remove_reference<T>::type&&>(t);
 }
 
-template<class _Ty> inline constexpr _Ty * constexpr_addressof(_Ty& _Val)
-{
-    return ((_Ty *) &(char&)_Val);
-}
-
 
 #if defined NDEBUG
 # define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
@@ -179,7 +202,7 @@ constexpr struct trivial_init_t{} trivial_init{};
 
 
 // 20.5.6, In-place construction
-constexpr struct emplace_t{} emplace{};
+constexpr struct in_place_t{} in_place{};
 
 
 // 20.5.7, Disengaged state indicator
@@ -246,11 +269,11 @@ struct optional_base
 
     explicit constexpr optional_base(T&& v) : init_(true), storage_(constexpr_move(v)) {}
 
-    template <class... Args> explicit optional_base(emplace_t, Args&&... args)
+    template <class... Args> explicit optional_base(in_place_t, Args&&... args)
         : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit optional_base(emplace_t, std::initializer_list<U> il, Args&&... args)
+    explicit optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
         : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~optional_base() { if (init_) storage_.value_.T::~T(); }
@@ -271,11 +294,11 @@ struct constexpr_optional_base
 
     explicit constexpr constexpr_optional_base(T&& v) : init_(true), storage_(constexpr_move(v)) {}
 
-    template <class... Args> explicit constexpr constexpr_optional_base(emplace_t, Args&&... args)
+    template <class... Args> explicit constexpr constexpr_optional_base(in_place_t, Args&&... args)
       : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit constexpr_optional_base(emplace_t, std::initializer_list<U> il, Args&&... args)
+    explicit constexpr_optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
       : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~constexpr_optional_base() = default;
@@ -283,7 +306,7 @@ struct constexpr_optional_base
 
 template <class T> 
 using OptionalBase = typename std::conditional<
-    std::has_trivial_destructor<T>::value, 
+    std::is_trivially_destructible<T>::value, 
     constexpr_optional_base<T>,
     optional_base<T>
 >::type;
@@ -294,7 +317,7 @@ template <class T>
 class optional : private OptionalBase<T>
 {
   static_assert( !std::is_same<typename std::decay<T>::type, nullopt_t>::value, "bad T" );
-  static_assert( !std::is_same<typename std::decay<T>::type, emplace_t>::value, "bad T" );
+  static_assert( !std::is_same<typename std::decay<T>::type, in_place_t>::value, "bad T" );
   
 
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
@@ -355,12 +378,12 @@ public:
   constexpr optional(T&& v) : OptionalBase<T>(constexpr_move(v)) {}
 
   template <class... Args> 
-    constexpr explicit optional(emplace_t, Args&&... args)
-        : OptionalBase<T>(emplace_t{}, constexpr_forward<Args>(args)...) {}
+    constexpr explicit optional(in_place_t, Args&&... args)
+        : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit optional(emplace_t, std::initializer_list<U> il, Args&&... args)
-        : OptionalBase<T>(emplace_t{}, il, constexpr_forward<Args>(args)...) {}
+    explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
+        : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
   // 20.5.4.2 Destructor 
   ~optional() = default;
@@ -404,19 +427,17 @@ public:
   
   
   template <class... Args> 
-  optional<T>& emplace(Args&&... args)
+  void emplace(Args&&... args)
   {
     clear();
     initialize(std::forward<Args>(args)...);
-    return *this;
   }
   
   template <class U, class... Args> 
-  optional<T>& emplace(initializer_list<U> il, Args&&... args)
+  void emplace(initializer_list<U> il, Args&&... args)
   {
     clear();
     initialize<U, Args...>(il, std::forward<Args>(args)...);
-    return *this;
   }
   
   // 20.5.4.4 Swap
@@ -465,7 +486,7 @@ public:
   }
   
   template <class V>
-  constexpr T value_or(V&& v) &&
+  T value_or(V&& v) &&
   {
     return *this ? std::move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
   }
@@ -487,7 +508,7 @@ template <class T>
 class optional<T&>
 {
   static_assert( !std::is_same<T, nullopt_t>::value, "bad T" );
-  static_assert( !std::is_same<T, emplace_t>::value, "bad T" );
+  static_assert( !std::is_same<T, in_place_t>::value, "bad T" );
   T* ref;
   
 public:
@@ -503,9 +524,9 @@ public:
   
   constexpr optional(const optional& rhs) noexcept : ref(rhs.ref) {}
   
-  explicit constexpr optional(emplace_t, T& v) noexcept : ref(static_addressof(v)) {}
+  explicit constexpr optional(in_place_t, T& v) noexcept : ref(static_addressof(v)) {}
   
-  explicit optional(emplace_t, T&&) = delete;
+  explicit optional(in_place_t, T&&) = delete;
   
   ~optional() = default;
   
@@ -546,12 +567,11 @@ public:
   >::type
   = delete;
   
-  optional& emplace(T& v) noexcept {
+  void emplace(T& v) noexcept {
     ref = static_addressof(v);
-    return *this;
   }
   
-  optional& emplace(T&&) = delete;
+  void emplace(T&&) = delete;
   
   
   void swap(optional<T&>& rhs) noexcept

@@ -156,7 +156,7 @@ TEST(value_ctor)
 
   {
       OracleVal v;
-      tr2::optional<Oracle> oo1{tr2::emplace, v};
+      tr2::optional<Oracle> oo1{tr2::in_place, v};
       assert (oo1 != tr2::nullopt);
       assert (oo1 != tr2::optional<Oracle>{});
       assert (oo1 == tr2::optional<Oracle>{v});
@@ -165,7 +165,7 @@ TEST(value_ctor)
       assert (oo1->s == sValueCopyConstructed);
       assert (v.s == sValueConstructed);
 
-      tr2::optional<Oracle> oo2{tr2::emplace, std::move(v)};
+      tr2::optional<Oracle> oo2{tr2::in_place, std::move(v)};
       assert (oo2 != tr2::nullopt);
       assert (oo2 != tr2::optional<Oracle>{});
       assert (oo2 == oo1);
@@ -289,7 +289,7 @@ TEST(optional_optional)
   assert (!oi1);
   
   {
-  tr2::optional<tr2::optional<int>> oi2 {tr2::emplace};
+  tr2::optional<tr2::optional<int>> oi2 {tr2::in_place};
   assert (oi2 != tr2::nullopt);
   assert (bool(oi2));
   assert (*oi2 == tr2::nullopt);
@@ -298,7 +298,7 @@ TEST(optional_optional)
   }
   
   {
-  tr2::optional<tr2::optional<int>> oi2 {tr2::emplace, tr2::nullopt};
+  tr2::optional<tr2::optional<int>> oi2 {tr2::in_place, tr2::nullopt};
   assert (oi2 != tr2::nullopt);
   assert (bool(oi2));
   assert (*oi2 == tr2::nullopt);
@@ -326,11 +326,11 @@ TEST(example_guard)
   //FAILS: optional<Guard> ogx = "res1"; 
   //FAILS: optional<Guard> ogx("res1"); 
   optional<Guard> oga;                     // Guard is non-copyable (and non-moveable)     
-  optional<Guard> ogb(emplace, "res1");   // initialzes the contained value with "res1"  
+  optional<Guard> ogb(in_place, "res1");   // initialzes the contained value with "res1"  
   assert (bool(ogb));
   assert (ogb->val == "res1");
             
-  optional<Guard> ogc(emplace);           // default-constructs the contained value
+  optional<Guard> ogc(in_place);           // default-constructs the contained value
   assert (bool(ogc));
   assert (ogc->val == "");
 
@@ -474,7 +474,7 @@ TEST(example_optional_arg)
   
   {
     using namespace std::experimental;
-    optional<Guard> grd1{emplace, "res1", 1};   // guard 1 initialized
+    optional<Guard> grd1{in_place, "res1", 1};   // guard 1 initialized
     optional<Guard> grd2;
 
     grd2.emplace("res2", 2);                     // guard 2 initialized
@@ -593,7 +593,7 @@ TEST(example_rationale)
   ////ov = {1, 2, 4, 8};
 
   ////std::allocator<int> a;
-  ////optional<std::vector<int>> ou { emplace, {1, 2, 4, 8}, a };
+  ////optional<std::vector<int>> ou { in_place, {1, 2, 4, 8}, a };
 
   ////assert (ou == ov);
 
@@ -601,7 +601,7 @@ TEST(example_rationale)
   // inconvenient syntax:
   {
     
-      tr2::optional<std::vector<int>> ov2{tr2::emplace, {2, 3}};
+      tr2::optional<std::vector<int>> ov2{tr2::in_place, {2, 3}};
     
       assert (bool(ov2));
       assert ((*ov2)[1] == 3);
@@ -609,14 +609,14 @@ TEST(example_rationale)
       ////////////////////////////
 
       std::vector<int> v = {1, 2, 4, 8};
-      optional<std::vector<int>> ov{tr2::emplace, {1, 2, 4, 8}};
+      optional<std::vector<int>> ov{tr2::in_place, {1, 2, 4, 8}};
 
       assert (v == *ov);
   
       ov.emplace({1, 2, 4, 8});
 /*
       std::allocator<int> a;
-      optional<std::vector<int>> ou { emplace, {1, 2, 4, 8}, a };
+      optional<std::vector<int>> ou { in_place, {1, 2, 4, 8}, a };
 
       assert (ou == ov);
 */
@@ -625,8 +625,8 @@ TEST(example_rationale)
   /////////////////////////////////
   {
   typedef int T;
-  optional<optional<T>> ot {emplace};
-  optional<optional<T>> ou {emplace, nullopt};
+  optional<optional<T>> ot {in_place};
+  optional<optional<T>> ou {in_place, nullopt};
   optional<optional<T>> ov {optional<T>{}};
   
   optional<int> oi;
@@ -1080,7 +1080,7 @@ TEST(optional_ref_emulation)
 TEST(moved_on_value_or)
 {
   using namespace tr2;
-  optional<Oracle> oo{emplace};
+  optional<Oracle> oo{in_place};
   
   assert (oo);
   assert (oo->s == sDefaultConstructed);
@@ -1090,11 +1090,11 @@ TEST(moved_on_value_or)
   assert (oo->s == sMovedFrom);
   assert (o.s == sMoveConstructed);
   
-  optional<MoveAware<int>> om {emplace, 1};
+  optional<MoveAware<int>> om {in_place, 1};
   assert (om);
   assert (om->moved == false);
   
-  MoveAware<int> m = std::move(om).value_or( MoveAware<int>{1} );
+  /*MoveAware<int> m =*/ std::move(om).value_or( MoveAware<int>{1} );
   assert (om);
   assert (om->moved == true);
 };
@@ -1158,12 +1158,12 @@ TEST(arrow_operator)
 {
   using namespace std::experimental;
   
-  optional<Combined> oc1{emplace, 1, 2};
+  optional<Combined> oc1{in_place, 1, 2};
   assert (oc1);
   assert (oc1->m == 1);
   assert (oc1->n == 2);
   
-  optional<Nasty> on{emplace, 1, 2};
+  optional<Nasty> on{in_place, 1, 2};
   assert (on);
   assert (on->m == 1);
   assert (on->n == 2);
@@ -1198,7 +1198,7 @@ TEST(arrow_wit_optional_ref)
   assert (on->m == 5);
   assert (on->n == 6);
   
-  optional<Nasty&> om{emplace, n};
+  optional<Nasty&> om{in_place, n};
   assert (om);
   assert (om->m == 1);
   assert (om->n == 2);
@@ -1300,7 +1300,7 @@ static_assert( g2 != g0, "eq!" );
 
 
 
-constexpr tr2::optional<Combined> gc0{tr2::emplace};
+constexpr tr2::optional<Combined> gc0{tr2::in_place};
 static_assert(gc0->n == 6, "WTF!");
 
 // optional refs
