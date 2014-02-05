@@ -13,7 +13,16 @@ Clang 3.2, G++ 4.7.2 (and probably later)
 Usage
 -----
 
-For usage examples and the overview see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3527.html
+```cpp
+optional<int> readInt(); // this function may return int or a not-an-int
+
+if (optional<int> oi = readInt()) // did I get a real int
+  cout << "my int is: " << *oi;   // use my int
+else
+  cout << "I have no int";
+```
+
+For more usage examples and the overview see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3527.html
 
 
 Differences from N3527
