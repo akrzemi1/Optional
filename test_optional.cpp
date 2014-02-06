@@ -510,7 +510,7 @@ void assign_norebind(tr2::optional<T&>& optref, T& obj)
   else        optref.emplace(obj);
 }
 
-
+template <typename T> void unused(T&&) {}
 
 TEST(example_conceptual_model)
 {
@@ -524,15 +524,16 @@ TEST(example_conceptual_model)
   oj = nullopt;
   ok = 0;
 
-  oi == nullopt;
-  oj == 0;
-  ok == 1;
+  unused(oi == nullopt);
+  unused(oj == 0);
+  unused(ok == 1);
 };
 
 TEST(example_rationale)
 {
   using namespace std::experimental;
   if (optional<char> ch = readNextChar()) {
+    unused(ch);
     // ...
   }
   
@@ -658,7 +659,7 @@ TEST(bad_comparison)
   bool b = (oi == oj);
   b = (oi >= i);
   b = (oi == i);
-  b = b;
+  unused(b);
 };
 
 
@@ -933,7 +934,7 @@ TEST(optional_ref_const_propagation)
   static_assert(std::is_same<decltype(*mi), int&>::value, "WTF");
   static_assert(std::is_same<decltype(*ci), const int&>::value, "WTF");
   
-  r = r;
+  unused(r);
 };
 
 TEST(optional_ref_assign)
