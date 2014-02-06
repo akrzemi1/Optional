@@ -65,8 +65,6 @@ namespace std{
 
 # if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
     // leave it; our metafunctions are already defined.
-# elif defined __clang__
-    // leave it; our metafunctions are already defined.
 # else
 
 
@@ -84,7 +82,8 @@ struct is_assignable
   template <class X, class Y>
   static constexpr bool has_assign(...) { return false; }
 
-  template <class X, class Y, size_t S = sizeof(std::declval<X>() = std::declval<Y>()) >
+  template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
+  // the comma operator is necessary for the cases where operator= returns void
   static constexpr bool has_assign(bool) { return true; }
 
   constexpr static bool value = has_assign<T, U>(true);
