@@ -467,7 +467,7 @@ public:
   }
   
   constexpr T const& value() const {
-    return initialized() ? contained_val() : throw bad_optional_access("bad optional access");
+    return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
   T& value() {
