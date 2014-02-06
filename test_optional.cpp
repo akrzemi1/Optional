@@ -1205,6 +1205,15 @@ TEST(arrow_wit_optional_ref)
   assert (om->n == 2);
 };
 
+TEST(no_dangling_reference_in_value)
+{
+  // this mostly tests compiler warnings
+  using namespace std::experimental;
+  optional<int> oi {2};
+  unused (oi.value());
+  const optional<int> coi {3};
+  unused (coi.value());
+};
 
 //// constexpr tests
 
