@@ -20,11 +20,17 @@
 
 # define REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
 
-# if defined __GNUC__
+# if defined __GNUC__ // NOTE: GNUC is also defined for Clang
 #   if (__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)
 #     define TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
 #   elif (__GNUC__ > 4)
 #     define TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
+#   endif
+#
+#   if (__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)
+#     define TR2_OPTIONAL_GCC_4_7_AND_HIGHER___
+#   elif (__GNUC__ > 4)
+#     define TR2_OPTIONAL_GCC_4_7_AND_HIGHER___
 #   endif
 #
 #   if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8) && (__GNUC_PATCHLEVEL__ >= 1)
@@ -35,7 +41,6 @@
 #     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   endif
 # endif
-
 
 
 # if defined __clang__
@@ -51,6 +56,15 @@
 # endif 
 
 
+# if defined TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
+#   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 1
+#   define OPTIONAL_CONSTEXPR_INIT_LIST constexpr
+# else
+#   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 0
+#   define OPTIONAL_CONSTEXPR_INIT_LIST
+# endif
+
+
 
 namespace std{
 
@@ -63,7 +77,7 @@ namespace std{
 # endif
 // END workaround for missing is_trivially_destructible
 
-# if (defined __GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)
+# if (defined TR2_OPTIONAL_GCC_4_7_AND_HIGHER___)
     // leave it; our metafunctions are already defined.
 # else
 
@@ -297,7 +311,7 @@ struct constexpr_optional_base
       : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit constexpr_optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
+    OPTIONAL_CONSTEXPR_INIT_LIST explicit constexpr_optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
       : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~constexpr_optional_base() = default;
@@ -377,12 +391,12 @@ public:
   constexpr optional(T&& v) : OptionalBase<T>(constexpr_move(v)) {}
 
   template <class... Args> 
-    constexpr explicit optional(in_place_t, Args&&... args)
-        : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
+  constexpr explicit optional(in_place_t, Args&&... args)
+  : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
-    template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
-    explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
-        : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
+  template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
+  OPTIONAL_CONSTEXPR_INIT_LIST explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
+  : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
   // 20.5.4.2 Destructor 
   ~optional() = default;

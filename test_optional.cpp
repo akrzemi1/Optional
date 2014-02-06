@@ -1344,6 +1344,29 @@ namespace constexpr_optional_ref_and_arrow
   static_assert(oc->n == 2, "WTF!");
 }
 
+#if OPTIONAL_HAS_CONSTEXPR_INIT_LIST
+
+namespace InitList
+{
+  using namespace std::experimental;
+  
+  struct ConstInitLister
+  {
+    template <typename T>
+	constexpr ConstInitLister(std::initializer_list<T> il) : len (il.size()) {}
+    size_t len;
+  };
+  
+  constexpr ConstInitLister CIL {2, 3, 4};
+  static_assert(CIL.len == 3, "WTF!");
+  
+  constexpr optional<ConstInitLister> oil {in_place, {4, 5, 6, 7}};
+  static_assert(oil, "WTF!");
+  static_assert(oil->len == 4, "WTF!");
+}
+
+#endif // OPTIONAL_HAS_CONSTEXPR_INIT_LIST
+
 // end constexpr tests
 
 
@@ -1371,8 +1394,13 @@ int main() {
   VEC v = {5, 6};
 
   if (OPTIONAL_HAS_THIS_RVALUE_REFS)
-    std::cout << "has rvalue references for *this" << std::endl;
+    std::cout << "Optional has rvalue references for *this" << std::endl;
   else
-    std::cout << "doesn't have rvalue references for *this" << std::endl;
+    std::cout << "Optional doesn't have rvalue references for *this" << std::endl;
+	
+  if (OPTIONAL_HAS_CONSTEXPR_INIT_LIST)
+    std::cout << "Optional has constexpr initializer_list" << std::endl;
+  else
+    std::cout << "Optional doesn't have constexpr initializer_list" << std::endl;
 }
 
