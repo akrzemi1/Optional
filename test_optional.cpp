@@ -1230,23 +1230,23 @@ void test_noexcept()
 {
   {
     tr2::optional<NothrowBoth> b1, b2;
-    static_assert(noexcept(tr2::optional<NothrowBoth>{std::move(b1)}), "bad noexcept!");
-    static_assert(noexcept(b1 = std::move(b2)), "bad noexcept!");
+    static_assert(noexcept(tr2::optional<NothrowBoth>{tr2::constexpr_move(b1)}), "bad noexcept!");
+    static_assert(noexcept(b1 = tr2::constexpr_move(b2)), "bad noexcept!");
   }
   {
     tr2::optional<NothrowCtor> c1, c2;
-    static_assert(noexcept(tr2::optional<NothrowCtor>{std::move(c1)}), "bad noexcept!");
-    static_assert(!noexcept(c1 = std::move(c2)), "bad noexcept!");
+    static_assert(noexcept(tr2::optional<NothrowCtor>{tr2::constexpr_move(c1)}), "bad noexcept!");
+    static_assert(!noexcept(c1 = tr2::constexpr_move(c2)), "bad noexcept!");
   }
   {
     tr2::optional<NothrowAssign> a1, a2;
-    static_assert(!noexcept(tr2::optional<NothrowAssign>{std::move(a1)}), "bad noexcept!");
-    static_assert(!noexcept(a1 = std::move(a2)), "bad noexcept!");
+    static_assert(!noexcept(tr2::optional<NothrowAssign>{tr2::constexpr_move(a1)}), "bad noexcept!");
+    static_assert(!noexcept(a1 = tr2::constexpr_move(a2)), "bad noexcept!");
   }
   {
     tr2::optional<NothrowNone> n1, n2;
-    static_assert(!noexcept(tr2::optional<NothrowNone>{std::move(n1)}), "bad noexcept!");
-    static_assert(!noexcept(n1 = std::move(n2)), "bad noexcept!");
+    static_assert(!noexcept(tr2::optional<NothrowNone>{tr2::constexpr_move(n1)}), "bad noexcept!");
+    static_assert(!noexcept(n1 = tr2::constexpr_move(n2)), "bad noexcept!");
   }
 }
 
