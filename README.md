@@ -25,8 +25,10 @@ Supported compilers
 Clang 3.2, Clang 3.4, G++ 4.7.2, G++ 4.8.1
 
 
-Differences from N3527
-----------------------
 
+Known Issues
+------------
+
+ - Currently, the reference (and the only known) impementation of certain pieces of functionality explore what C++11 identifies as undefined behavior (see national body comment FI 15: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3770.html#FI15). This is mostly why Optional was removed from C++14 and put into Library Fundamentals TS. Luckily what the Standard identifies as UB is well defined on all known platforms. We expect that the C++14 wil fix this problem, so that our trick becomes well-defined.
  - The constructor taking `initializer_list` argument is not `constexpr`. This is because `initializer_list` operations are not `constexpr` in C++11.
  - In G++ 4.7.2 and 4.8.0 member function `value_or` does not have rvalue reference overload. These compilers do not support rvalue overloding on `*this`. 
