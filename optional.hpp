@@ -159,7 +159,11 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 # define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
   inline void fail(const char* expr, const char* file, unsigned line)
   {
-  # if defined __clang__ || defined __GNU_LIBRARY__
+  # if defined(EMSCRIPTEN) && EMSCRIPTEN
+    __assert_fail(expr, file, line, "");
+  # elif defined __native_client__
+    __assert(expr, line, file); // WHY.
+  # elif defined __clang__ || defined __GNU_LIBRARY__
     __assert(expr, file, line);
   # elif defined __GNUC__
     _assert(expr, file, line);
