@@ -22,7 +22,7 @@ For more usage examples and the overview see http://www.open-std.org/jtc1/sc22/w
 Supported compilers
 -------------------
 
-Clang 3.2, Clang 3.4, G++ 4.7.2, G++ 4.8.1
+Clang 3.2, Clang 3.4, G++ 4.7.2, G++ 4.8.1. Tested only with libstdc++.
 
 
 
