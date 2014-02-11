@@ -98,14 +98,9 @@ namespace tr2 = std::experimental;
 
 TEST(disengaged_ctor)
 {
-    tr2::optional<int> o1;
-    assert (!o1);
-
-    tr2::optional<int> o2 = tr2::nullopt;
-    assert (!o2);
-
-    tr2::optional<int> o3 = o2;
-    assert (!o3);
+    tr2::optional<int> o1;                // 3 ways to construct
+    tr2::optional<int> o2 = tr2::nullopt; // a disengaged optional
+    tr2::optional<int> o3 = o2;           // object
 
     assert (o1 == tr2::nullopt);
     assert (o1 == tr2::optional<int>{});
@@ -134,7 +129,7 @@ TEST(disengaged_ctor)
 TEST(value_ctor)
 {
   OracleVal v;
-  tr2::optional<Oracle> oo1(v);
+  tr2::optional<Oracle> oo1(v);  // move construct from a temporary Oracle
   assert (oo1 != tr2::nullopt);
   assert (oo1 != tr2::optional<Oracle>{});
   assert (oo1 == tr2::optional<Oracle>{v});
