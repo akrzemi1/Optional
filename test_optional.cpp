@@ -20,7 +20,7 @@ struct caller {
 };
 # define CAT2(X, Y) X ## Y
 # define CAT(X, Y) CAT2(X, Y)
-# define TEST(NAME) caller CAT(__VAR, __LINE__) = []
+# define TEST(NAME) caller CAT(NAME, __LINE__) = []
 
 enum  State 
 {
