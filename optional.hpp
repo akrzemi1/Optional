@@ -88,13 +88,16 @@ namespace std{
     // leave it; our metafunctions are already defined.
 # else
 
+template <typename T>
+T&& noexcept_declval() noexcept;
+
 template <class T, class U>
 struct is_assignable
 {
   template <class X, class Y>
   static constexpr bool has_assign(...) { return false; }
 
-  template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
+  template <class X, class Y, size_t S = sizeof((noexcept_declval<X>() = noexcept_declval<Y>(), true)) >
   // the comma operator is necessary for the cases where operator= returns void
   static constexpr bool has_assign(bool) { return true; }
 
@@ -112,7 +115,7 @@ struct is_nothrow_move_assignable
 
   template <class X>
   struct has_nothrow_move_assign<X, true> {
-    constexpr static bool value = noexcept( std::declval<X&>() = std::declval<X&&>() );
+    constexpr static bool value = noexcept( noexcept_declval<X&>() = noexcept_declval<X&&>() );
   };
 
   constexpr static bool value = has_nothrow_move_assign<T, is_assignable<T&, T&&>::value>::value;
