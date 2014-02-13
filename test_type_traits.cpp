@@ -18,22 +18,28 @@ struct Val
 
 struct Safe
 {
-    Safe(){}
-    Safe( Safe const & ){}
-    Safe( Safe && ) noexcept {}
+  Safe(){}
+  Safe( Safe const & ){}
+  Safe( Safe && ) noexcept {}
     
-    Safe & operator=( Safe const & ){ return *this; }
-    Safe & operator=( Safe && ) noexcept { return *this; }
+  Safe & operator=( Safe const & ){ return *this; }
+  Safe & operator=( Safe && ) noexcept { return *this; }
 };
 
 struct Unsafe
 {
-    Unsafe(){}
-    Unsafe( Unsafe const & ){}
-    Unsafe( Unsafe && ){}
+  Unsafe(){}
+  Unsafe( Unsafe const & ){}
+  Unsafe( Unsafe && ){}
     
-    Unsafe & operator=( Unsafe const & ){ return *this; }
-    Unsafe & operator=( Unsafe && ) { return *this; }
+  Unsafe & operator=( Unsafe const & ){ return *this; }
+  Unsafe & operator=( Unsafe && ) { return *this; }
+};
+
+struct VoidNothrowBoth
+{
+  VoidNothrowBoth(VoidNothrowBoth&&) noexcept(true) {};
+  void operator=(VoidNothrowBoth&&) noexcept(true) {}; // note void return type
 };
 
 
@@ -45,5 +51,8 @@ static_assert(!std::is_assignable<Val&, Val&&>::value, "WTF!");
 
 static_assert(std::is_nothrow_move_assignable<Safe>::value, "WTF!");
 static_assert(!std::is_nothrow_move_assignable<Unsafe>::value, "WTF!");
+
+static_assert(std::is_nothrow_move_constructible<VoidNothrowBoth>::value, "WTF!");
+static_assert(std::is_nothrow_move_assignable<VoidNothrowBoth>::value, "WTF!");
 
 int main() { }
