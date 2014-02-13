@@ -59,6 +59,9 @@
 # if defined TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 1
 #   define OPTIONAL_CONSTEXPR_INIT_LIST constexpr
+# elif (defined __GLIBCXX__) && __GLIBCXX__ >= 20130531
+#   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 1
+#   define OPTIONAL_CONSTEXPR_INIT_LIST constexpr
 # else
 #   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 0
 #   define OPTIONAL_CONSTEXPR_INIT_LIST
@@ -68,27 +71,22 @@
 
 namespace std{
 
+// workarounds for missing traits in glibc++
+
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
-    // leave it: it is already there
+  // leave it: it is already there
+# elif (defined __GLIBCXX__) && __GLIBCXX__ > 20130000
+  // Clang using new glibc++: it has it
 # else
-	template <typename T>
-	using is_trivially_destructible = has_trivial_destructor<T>;
+  template <typename T>
+  using is_trivially_destructible = has_trivial_destructor<T>;
 # endif
 // END workaround for missing is_trivially_destructible
 
 # if (defined TR2_OPTIONAL_GCC_4_7_AND_HIGHER___)
     // leave it; our metafunctions are already defined.
 # else
-
-
-// workaround for missing traits in GCC and CLANG
-template <class T>
-struct is_nothrow_move_constructible
-{
-  constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
-};
-
 
 template <class T, class U>
 struct is_assignable
@@ -119,10 +117,64 @@ struct is_nothrow_move_assignable
 
   constexpr static bool value = has_nothrow_move_assign<T, is_assignable<T&, T&&>::value>::value;
 };
+
+#  if (defined __GLIBCXX__) && (__GLIBCXX__ <= 20110428)
+
+template <class T>
+struct is_nothrow_move_constructible
+{
+  template <class X, bool has_any_move_ctor>
+  struct has_nothrow_move_ctor {
+    constexpr static bool value = false;
+  };
+
+  template <class X>
+  struct has_nothrow_move_ctor<X, true> {
+    constexpr static bool value = noexcept( X(noexcept_declval<X&&>()) );
+  };
+
+  constexpr static bool value = has_nothrow_move_ctor<T, is_constructible<T, T&&>::value>::value;
+};
+
+#  else
+
+template <class T>
+struct is_nothrow_move_constructible
+{
+  constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
+};
+
+#  endif
+
+# endif  
 // end workaround
 
+namespace experimental {
+	
+// constexpr assertion
+#if defined NDEBUG
+# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
+#else
+# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
+  inline void fail(const char* expr, const char* file, unsigned line)
+  {
+  # if defined(EMSCRIPTEN) && EMSCRIPTEN
+    __assert_fail(expr, file, line, "");
+  # elif defined __native_client__
+    __assert(expr, line, file); // WHY.
+  # elif (defined __GLIBCXX__) && __GLIBCXX__ <= 20110428
+    __assert_func(file, line, "", expr);
+  # elif defined __clang__ || defined __GNU_LIBRARY__
+    __assert(expr, file, line);
+  # elif defined __GNUC__
+    _assert(expr, file, line);
+  # else
+  #   error UNSUPPORTED COMPILER
+  # endif
+  }
+#endif	
 
-# endif   
+} // namespace experimental
 
 
 namespace experimental{
@@ -151,27 +203,6 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 {
     return static_cast<typename std::remove_reference<T>::type&&>(t);
 }
-
-
-#if defined NDEBUG
-# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
-#else
-# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
-  inline void fail(const char* expr, const char* file, unsigned line)
-  {
-  # if defined(EMSCRIPTEN) && EMSCRIPTEN
-    __assert_fail(expr, file, line, "");
-  # elif defined __native_client__
-    __assert(expr, line, file); // WHY.
-  # elif defined __clang__ || defined __GNU_LIBRARY__
-    __assert(expr, file, line);
-  # elif defined __GNUC__
-    _assert(expr, file, line);
-  # else
-  #   error UNSUPPORTED COMPILER
-  # endif
-  }
-#endif
 
 
 template <typename T>
