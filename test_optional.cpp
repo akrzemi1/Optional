@@ -7,6 +7,10 @@
 // The idea and interface is based on Boost.Optional library
 // authored by Fernando Luis Cacciola Carballal
 
+#if (defined __clang__)
+  namespace std { class type_info; }
+#endif
+
 # include "optional.hpp"
 # include <vector>
 # include <iostream>
