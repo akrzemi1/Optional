@@ -71,7 +71,16 @@
 
 namespace std{
 
-// workarounds for missing traits in glibc++
+// workarounds for missing definitions in glibc++
+
+# if (defined __GLIBCXX__) && __GLIBCXX__ <= 20110428
+  template <typename T>
+  T* addressof(T& v)
+  {
+    return reinterpret_cast<T*>
+      (&const_cast<char&>(reinterpret_cast<const volatile char&>(v)));
+  }
+# endif
 
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
