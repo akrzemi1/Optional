@@ -164,6 +164,8 @@ struct is_nothrow_move_constructible
 namespace experimental {
 	
 // constexpr assertion
+// in C++11 a constexpr function can only contain one expression, 
+// so I have to combine a check and the return expression into one super-expression
 #if defined NDEBUG
 # define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
 #else
