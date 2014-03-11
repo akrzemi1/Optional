@@ -7,10 +7,6 @@
 // The idea and interface is based on Boost.Optional library
 // authored by Fernando Luis Cacciola Carballal
 
-#if (defined __clang__)
-  namespace std { class type_info; }
-#endif
-
 # include "optional.hpp"
 # include <vector>
 # include <iostream>
@@ -24,7 +20,7 @@ struct caller {
 };
 # define CAT2(X, Y) X ## Y
 # define CAT(X, Y) CAT2(X, Y)
-# define TEST(NAME) caller CAT(NAME, __LINE__) = []
+# define TEST(NAME) caller CAT(__VAR, __LINE__) = []
 
 enum  State 
 {
@@ -102,9 +98,14 @@ namespace tr2 = std::experimental;
 
 TEST(disengaged_ctor)
 {
-    tr2::optional<int> o1;                // 3 ways to construct
-    tr2::optional<int> o2 = tr2::nullopt; // a disengaged optional
-    tr2::optional<int> o3 = o2;           // object
+    tr2::optional<int> o1;
+    assert (!o1);
+
+    tr2::optional<int> o2 = tr2::nullopt;
+    assert (!o2);
+
+    tr2::optional<int> o3 = o2;
+    assert (!o3);
 
     assert (o1 == tr2::nullopt);
     assert (o1 == tr2::optional<int>{});
@@ -133,7 +134,7 @@ TEST(disengaged_ctor)
 TEST(value_ctor)
 {
   OracleVal v;
-  tr2::optional<Oracle> oo1(v);  // move construct from a temporary Oracle
+  tr2::optional<Oracle> oo1(v);
   assert (oo1 != tr2::nullopt);
   assert (oo1 != tr2::optional<Oracle>{});
   assert (oo1 == tr2::optional<Oracle>{v});
@@ -1097,6 +1098,16 @@ TEST(moved_on_value_or)
   /*MoveAware<int> m =*/ std::move(om).value_or( MoveAware<int>{1} );
   assert (om);
   assert (om->moved == true);
+
+# if OPTIONAL_HAS_MOVE_ACCESSORS == 1  
+  {
+    Date d = optional<Date>{in_place, 1}.value();
+    assert (d.i); // to silence compiler warning
+	
+	Date d2 = *optional<Date>{in_place, 1};
+    assert (d2.i); // to silence compiler warning
+  }
+# endif
 };
 # endif
 
@@ -1305,9 +1316,12 @@ static_assert( *g2 == 2, "not 2!" );
 static_assert( g2 == tr2::optional<int>(2), "not 2!" );
 static_assert( g2 != g0, "eq!" );
 
-
-
-
+# if OPTIONAL_HAS_MOVE_ACCESSORS == 1
+static_assert( *tr2::optional<int>{3} == 3, "WTF!" );
+static_assert( tr2::optional<int>{3}.value() == 3, "WTF!" );
+static_assert( tr2::optional<int>{3}.value_or(1) == 3, "WTF!" );
+static_assert( tr2::optional<int>{}.value_or(4) == 4, "WTF!" );
+# endif
 
 constexpr tr2::optional<Combined> gc0{tr2::in_place};
 static_assert(gc0->n == 6, "WTF!");
@@ -1401,5 +1415,10 @@ int main() {
     std::cout << "Optional has constexpr initializer_list" << std::endl;
   else
     std::cout << "Optional doesn't have constexpr initializer_list" << std::endl;
+
+  if (OPTIONAL_HAS_MOVE_ACCESSORS)
+    std::cout << "Optional has constexpr move accessors" << std::endl;
+  else
+    std::cout << "Optional doesn't have constexpr move accessors" << std::endl;	
 }
 
