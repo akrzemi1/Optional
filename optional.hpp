@@ -41,7 +41,14 @@
 #     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   endif
 # endif
-
+#
+# if defined __clang_major__
+#   if (__clang_major__ == 3 && __clang_minor__ >= 5)
+#     define TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+#   elif (__clang_major__ > 3)
+#     define TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+#   endif
+# endif
 
 # if defined __clang__
 #   if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
@@ -59,46 +66,46 @@
 # if defined TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 1
 #   define OPTIONAL_CONSTEXPR_INIT_LIST constexpr
-# elif (defined __GLIBCXX__) && __GLIBCXX__ >= 20130531
-#   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 1
-#   define OPTIONAL_CONSTEXPR_INIT_LIST constexpr
 # else
 #   define OPTIONAL_HAS_CONSTEXPR_INIT_LIST 0
 #   define OPTIONAL_CONSTEXPR_INIT_LIST
+# endif
+
+# if defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+#   define OPTIONAL_HAS_MOVE_ACCESSORS 1
+# else
+#   define OPTIONAL_HAS_MOVE_ACCESSORS 0
 # endif
 
 
 
 namespace std{
 
-// workarounds for missing definitions in glibc++
-
-# if (defined __GLIBCXX__) && __GLIBCXX__ <= 20110428
-  template <typename T>
-  T* addressof(T& v)
-  {
-    return reinterpret_cast<T*>
-      (&const_cast<char&>(reinterpret_cast<const volatile char&>(v)));
-  }
-# endif
-
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
-  // leave it: it is already there
-# elif (defined __GLIBCXX__) && __GLIBCXX__ > 20130000
-  // Clang using new glibc++: it has it
+    // leave it: it is already there
+# elif defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+    // leave it: it is already there
 # else
-  template <typename T>
-  using is_trivially_destructible = has_trivial_destructor<T>;
+	template <typename T>
+	using is_trivially_destructible = has_trivial_destructor<T>;
 # endif
 // END workaround for missing is_trivially_destructible
 
 # if (defined TR2_OPTIONAL_GCC_4_7_AND_HIGHER___)
     // leave it; our metafunctions are already defined.
+# elif (defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_)
+    // leave it; our metafunctions are already defined.
 # else
 
-template <typename T>
-T&& noexcept_declval() noexcept;
+
+// workaround for missing traits in GCC and CLANG
+template <class T>
+struct is_nothrow_move_constructible
+{
+  constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
+};
+
 
 template <class T, class U>
 struct is_assignable
@@ -106,7 +113,7 @@ struct is_assignable
   template <class X, class Y>
   static constexpr bool has_assign(...) { return false; }
 
-  template <class X, class Y, size_t S = sizeof((noexcept_declval<X>() = noexcept_declval<Y>(), true)) >
+  template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
   // the comma operator is necessary for the cases where operator= returns void
   static constexpr bool has_assign(bool) { return true; }
 
@@ -124,71 +131,15 @@ struct is_nothrow_move_assignable
 
   template <class X>
   struct has_nothrow_move_assign<X, true> {
-    constexpr static bool value = noexcept( noexcept_declval<X&>() = noexcept_declval<X&&>() );
+    constexpr static bool value = noexcept( std::declval<X&>() = std::declval<X&&>() );
   };
 
   constexpr static bool value = has_nothrow_move_assign<T, is_assignable<T&, T&&>::value>::value;
 };
-
-#  if (defined __GLIBCXX__) && (__GLIBCXX__ <= 20110428)
-
-template <class T>
-struct is_nothrow_move_constructible
-{
-  template <class X, bool has_any_move_ctor>
-  struct has_nothrow_move_ctor {
-    constexpr static bool value = false;
-  };
-
-  template <class X>
-  struct has_nothrow_move_ctor<X, true> {
-    constexpr static bool value = noexcept( X(noexcept_declval<X&&>()) );
-  };
-
-  constexpr static bool value = has_nothrow_move_ctor<T, is_constructible<T, T&&>::value>::value;
-};
-
-#  else
-
-template <class T>
-struct is_nothrow_move_constructible
-{
-  constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
-};
-
-#  endif
-
-# endif  
 // end workaround
 
-namespace experimental {
-	
-// constexpr assertion
-// in C++11 a constexpr function can only contain one expression, 
-// so I have to combine a check and the return expression into one super-expression
-#if defined NDEBUG
-# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
-#else
-# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
-  inline void fail(const char* expr, const char* file, unsigned line)
-  {
-  # if defined(EMSCRIPTEN) && EMSCRIPTEN
-    __assert_fail(expr, file, line, "");
-  # elif defined __native_client__
-    __assert(expr, line, file); // WHY.
-  # elif (defined __GLIBCXX__) && __GLIBCXX__ <= 20110428
-    __assert_func(file, line, "", expr);
-  # elif defined __clang__ || defined __GNU_LIBRARY__
-    __assert(expr, file, line);
-  # elif defined __GNUC__
-    _assert(expr, file, line);
-  # else
-  #   error UNSUPPORTED COMPILER
-  # endif
-  }
-#endif	
 
-} // namespace experimental
+# endif   
 
 
 namespace experimental{
@@ -217,6 +168,23 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 {
     return static_cast<typename std::remove_reference<T>::type&&>(t);
 }
+
+
+#if defined NDEBUG
+# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
+#else
+# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
+  inline void fail(const char* expr, const char* file, unsigned line)
+  {
+  # if defined __clang__ || defined __GNU_LIBRARY__
+    __assert(expr, file, line);
+  # elif defined __GNUC__
+    _assert(expr, file, line);
+  # else
+  #   error UNSUPPORTED COMPILER
+  # endif
+  }
+#endif
 
 
 template <typename T>
@@ -388,8 +356,13 @@ class optional : private OptionalBase<T>
   
 # if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
   constexpr const T& contained_val() const& { return OptionalBase<T>::storage_.value_; }
+#   if OPTIONAL_HAS_MOVE_ACCESSORS == 1
+  constexpr T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
+  constexpr T& contained_val() & { return OptionalBase<T>::storage_.value_; }
+#   else  
   T& contained_val() & { return OptionalBase<T>::storage_.value_; }
   T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
+#   endif
 # else
   constexpr const T& contained_val() const { return OptionalBase<T>::storage_.value_; }
   T& contained_val() { return OptionalBase<T>::storage_.value_; }
@@ -511,7 +484,10 @@ public:
   }
 
   // 20.5.4.5 Observers 
-  constexpr T const* operator ->() const {  
+  
+  constexpr explicit operator bool() const noexcept { return initialized(); }  
+  
+    constexpr T const* operator ->() const {  
     return ASSERTED_EXPRESSION(initialized(), dataptr());
   }
   
@@ -520,6 +496,37 @@ public:
     return dataptr(); 
   }
   
+# if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
+
+  constexpr T const& operator *() const& { 
+    return ASSERTED_EXPRESSION(initialized(), contained_val());
+  }
+  
+  T& operator *() & { 
+    assert (initialized()); 
+    return contained_val(); 
+  }
+  
+  constexpr T&& operator *() && { 
+    assert (initialized()); 
+    return constexpr_move(contained_val()); 
+  }
+
+  constexpr T const& value() const& {
+    return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
+  }
+  
+  T& value() & {
+    return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
+  }
+  
+  constexpr T&& value() && {
+    if (!initialized()) throw bad_optional_access("bad optional access");
+	return std::move(contained_val());
+  }
+  
+# else
+
   constexpr T const& operator *() const { 
     return ASSERTED_EXPRESSION(initialized(), contained_val());
   }
@@ -537,7 +544,7 @@ public:
     return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
-  constexpr explicit operator bool() const noexcept { return initialized(); }  
+# endif
   
 # if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
 
@@ -547,14 +554,26 @@ public:
     return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
   }
   
+#   if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
+
+  template <class V>
+  constexpr T value_or(V&& v) &&
+  {
+    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
+  }
+
+#   else
+ 
   template <class V>
   T value_or(V&& v) &&
   {
-    return *this ? std::move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
+    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
   }
   
+#   endif
+  
 # else
-
+  
   template <class V>
   constexpr T value_or(V&& v) const
   {
