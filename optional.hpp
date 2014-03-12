@@ -487,22 +487,22 @@ public:
   
   constexpr explicit operator bool() const noexcept { return initialized(); }  
   
-    constexpr T const* operator ->() const {  
+  constexpr T const* operator ->() const {  
     return ASSERTED_EXPRESSION(initialized(), dataptr());
-  }
-  
-  T* operator ->() { 
-    assert (initialized()); 
-    return dataptr(); 
   }
   
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
 
+  constexpr T* operator ->() { 
+    assert (initialized()); 
+    return dataptr(); 
+  }
+  
   constexpr T const& operator *() const& { 
     return ASSERTED_EXPRESSION(initialized(), contained_val());
   }
   
-  T& operator *() & { 
+  constexpr T& operator *() & { 
     assert (initialized()); 
     return contained_val(); 
   }
@@ -516,7 +516,7 @@ public:
     return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
-  T& value() & {
+  constexpr T& value() & {
     return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
@@ -527,6 +527,11 @@ public:
   
 # else
 
+  T* operator ->() { 
+    assert (initialized()); 
+    return dataptr(); 
+  }
+  
   constexpr T const& operator *() const { 
     return ASSERTED_EXPRESSION(initialized(), contained_val());
   }
