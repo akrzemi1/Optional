@@ -377,7 +377,7 @@ class optional : private OptionalBase<T>
   void initialize(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
   {
     assert(!OptionalBase<T>::init_);
-    new (dataptr()) T(std::forward<Args>(args)...);
+    ::new ((void*)dataptr()) T(std::forward<Args>(args)...);
     OptionalBase<T>::init_ = true;
   }
 
@@ -385,7 +385,7 @@ class optional : private OptionalBase<T>
   void initialize(std::initializer_list<U> il, Args&&... args) noexcept(noexcept(T(il, std::forward<Args>(args)...)))
   {
     assert(!OptionalBase<T>::init_);
-    new (dataptr()) T(il, std::forward<Args>(args)...);
+    ::new ((void*)dataptr()) T(il, std::forward<Args>(args)...);
     OptionalBase<T>::init_ = true;
   }
 
@@ -399,13 +399,13 @@ public:
   optional(const optional& rhs) 
   : OptionalBase<T>(only_set_initialized, rhs.initialized())
   {
-    if (rhs.initialized()) new (dataptr()) T(*rhs);
+    if (rhs.initialized()) ::new ((void*)dataptr()) T(*rhs);
   }
 
   optional(optional&& rhs) noexcept(std::is_nothrow_move_constructible<T>::value)
   : OptionalBase<T>(only_set_initialized, rhs.initialized())
   {
-    if (rhs.initialized()) new (dataptr()) T(std::move(*rhs));
+    if (rhs.initialized()) ::new ((void*)dataptr()) T(std::move(*rhs));
   }
 
   constexpr optional(const T& v) : OptionalBase<T>(v) {}
