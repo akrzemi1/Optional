@@ -1225,6 +1225,41 @@ TEST(no_dangling_reference_in_value)
   unused (coi.value());
 };
 
+struct CountedObject
+{
+  static int _counter;
+  bool _throw;
+  CountedObject(bool b) : _throw(b) { ++_counter; }
+  CountedObject(CountedObject const& rhs) : _throw(rhs._throw) { if (_throw) throw int(); }
+  ~CountedObject() { --_counter; }
+};
+
+int CountedObject::_counter = 0;
+
+TEST(exception_safety)
+{
+  using namespace std::experimental;
+  try {
+    optional<CountedObject> oo(in_place, true); // throw
+    optional<CountedObject> o1(oo);
+  }
+  catch(...)
+  {
+    //
+  }
+  assert(CountedObject::_counter == 0);
+  
+  try {
+    optional<CountedObject> oo(in_place, true); // throw
+    optional<CountedObject> o1(std::move(oo));  // now move
+  }
+  catch(...)
+  {
+    //
+  }
+  assert(CountedObject::_counter == 0);
+};
+
 //// constexpr tests
 
 // these 4 classes have different noexcept signatures in move operations
