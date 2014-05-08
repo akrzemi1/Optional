@@ -18,7 +18,7 @@
 # include <string>
 # include <stdexcept>
 
-# define REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
+# define TR2_OPTIONAL_REQUIRES(...) typename enable_if<__VA_ARGS__::value, bool>::type = false
 
 # if defined __GNUC__ // NOTE: GNUC is also defined for Clang
 #   if (__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)
@@ -171,9 +171,9 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 
 
 #if defined NDEBUG
-# define ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
+# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
 #else
-# define ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
+# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
   inline void fail(const char* expr, const char* file, unsigned line)
   {
   # if defined __clang__ || defined __GNU_LIBRARY__
@@ -201,13 +201,13 @@ struct has_overloaded_addressof
 
 
 
-template <typename T, REQUIRES(!has_overloaded_addressof<T>)>
+template <typename T, TR2_OPTIONAL_REQUIRES(!has_overloaded_addressof<T>)>
 constexpr T* static_addressof(T& ref)
 {
   return &ref;
 }
 
-template <typename T, REQUIRES(has_overloaded_addressof<T>)>
+template <typename T, TR2_OPTIONAL_REQUIRES(has_overloaded_addressof<T>)>
 T* static_addressof(T& ref)
 {
   return std::addressof(ref);
@@ -302,7 +302,7 @@ struct optional_base
     template <class... Args> explicit optional_base(in_place_t, Args&&... args)
         : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
-    template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
+    template <class U, class... Args, TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
     explicit optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
         : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
@@ -327,7 +327,7 @@ struct constexpr_optional_base
     template <class... Args> explicit constexpr constexpr_optional_base(in_place_t, Args&&... args)
       : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
-    template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
+    template <class U, class... Args, TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
     OPTIONAL_CONSTEXPR_INIT_LIST explicit constexpr_optional_base(in_place_t, std::initializer_list<U> il, Args&&... args)
       : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
@@ -397,15 +397,21 @@ public:
   constexpr optional(nullopt_t) noexcept : OptionalBase<T>() {};
 
   optional(const optional& rhs) 
-  : OptionalBase<T>(only_set_initialized, rhs.initialized())
+  : OptionalBase<T>(only_set_initialized, false)
   {
-    if (rhs.initialized()) new (dataptr()) T(*rhs);
+    if (rhs.initialized()) {
+        new (dataptr()) T(*rhs);
+        OptionalBase<T>::init_ = true;
+    }
   }
 
   optional(optional&& rhs) noexcept(std::is_nothrow_move_constructible<T>::value)
-  : OptionalBase<T>(only_set_initialized, rhs.initialized())
+  : OptionalBase<T>(only_set_initialized, false)
   {
-    if (rhs.initialized()) new (dataptr()) T(std::move(*rhs));
+    if (rhs.initialized()) {
+        new (dataptr()) T(std::move(*rhs));
+        OptionalBase<T>::init_ = true;
+    }
   }
 
   constexpr optional(const T& v) : OptionalBase<T>(v) {}
@@ -416,7 +422,7 @@ public:
   constexpr explicit optional(in_place_t, Args&&... args)
   : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
-  template <class U, class... Args, REQUIRES(is_constructible<T, std::initializer_list<U>>)>
+  template <class U, class... Args, TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
   OPTIONAL_CONSTEXPR_INIT_LIST explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
   : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
@@ -488,7 +494,7 @@ public:
   constexpr explicit operator bool() const noexcept { return initialized(); }  
   
   constexpr T const* operator ->() const {  
-    return ASSERTED_EXPRESSION(initialized(), dataptr());
+    return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), dataptr());
   }
   
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
@@ -499,7 +505,7 @@ public:
   }
   
   constexpr T const& operator *() const& { 
-    return ASSERTED_EXPRESSION(initialized(), contained_val());
+    return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), contained_val());
   }
   
   constexpr T& operator *() & { 
@@ -533,7 +539,7 @@ public:
   }
   
   constexpr T const& operator *() const { 
-    return ASSERTED_EXPRESSION(initialized(), contained_val());
+    return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), contained_val());
   }
   
   T& operator *() { 
@@ -667,11 +673,11 @@ public:
     
   // 20.5.5.3, observers
   constexpr T* operator->() const {
-    return ASSERTED_EXPRESSION(ref, ref);
+    return TR2_OPTIONAL_ASSERTED_EXPRESSION(ref, ref);
   }
   
   constexpr T& operator*() const {    
-    return ASSERTED_EXPRESSION(ref, *ref);
+    return TR2_OPTIONAL_ASSERTED_EXPRESSION(ref, *ref);
   }
   
   constexpr T& value() const {
@@ -1026,6 +1032,7 @@ namespace std
   };
 }
 
-
+# undef TR2_OPTIONAL_REQUIRES
+# undef TR2_OPTIONAL_ASSERTED_EXPRESSION
 
 # endif //___OPTIONAL_HPP___
