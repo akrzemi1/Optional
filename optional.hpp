@@ -396,7 +396,20 @@ public:
   constexpr optional() noexcept : OptionalBase<T>()  {};
   constexpr optional(nullopt_t) noexcept : OptionalBase<T>() {};
 
-  optional(const optional& rhs) 
+
+  optional(const optional& rhs)
+  : OptionalBase<T>(only_set_initialized, false)
+  {
+    if (rhs.initialized()) {
+        ::new (static_cast<void*>(dataptr())) T(*rhs);
+        OptionalBase<T>::init_ = true;
+    }
+  }
+
+  template<class> friend class optional;
+
+  template<class U>
+  optional(const optional<U>& rhs, typename std::enable_if<std::is_convertible<U, T>::value, void*>::type = nullptr)
   : OptionalBase<T>(only_set_initialized, false)
   {
     if (rhs.initialized()) {
@@ -414,9 +427,28 @@ public:
     }
   }
 
+  template<class U>
+  optional(optional<U>&& rhs, typename std::enable_if<std::is_convertible<U, T>::value, void*>::type = nullptr)
+  noexcept(std::is_nothrow_move_constructible<T>::value)
+  : OptionalBase<T>(only_set_initialized, false)
+  {
+    if (rhs.initialized()) {
+        ::new (static_cast<void*>(dataptr())) T(std::move(*rhs));
+        OptionalBase<T>::init_ = true;
+    }
+  }
+
   constexpr optional(const T& v) : OptionalBase<T>(v) {}
 
+  template<class U>
+  constexpr optional(const U& v, typename std::enable_if<std::is_convertible<U, T>::value, void*>::type = nullptr)
+  : OptionalBase<T>(v) {}
+
   constexpr optional(T&& v) : OptionalBase<T>(constexpr_move(v)) {}
+
+  template<class U>
+  constexpr optional(U&& v, typename std::enable_if<std::is_convertible<U, T>::value, void*>::type = nullptr)
+  : OptionalBase<T>(constexpr_move(v)) {}
 
   template <class... Args> 
   constexpr explicit optional(in_place_t, Args&&... args)
