@@ -48,6 +48,11 @@
 #   elif (__clang_major__ > 3)
 #     define TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
 #   endif
+#   if defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+#     define TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
+#   elif (__clang_major__ == 3 && __clang_minor__ == 4 && __clang_patchlevel__ >= 2)
+#     define TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
+#   endif
 # endif
 
 # if defined __clang__
@@ -84,7 +89,7 @@ namespace std{
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
     // leave it: it is already there
-# elif defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
+# elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it: it is already there
 # else
 	template <typename T>
@@ -94,7 +99,7 @@ namespace std{
 
 # if (defined TR2_OPTIONAL_GCC_4_7_AND_HIGHER___)
     // leave it; our metafunctions are already defined.
-# elif (defined TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_)
+# elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it; our metafunctions are already defined.
 # else
 
