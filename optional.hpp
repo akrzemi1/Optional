@@ -93,6 +93,8 @@ namespace experimental{
     // leave it: it is already there
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it: it is already there
+# elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
+    // leave it: the user doesn't want it
 # else
 	template <typename T>
 	using is_trivially_destructible = std::has_trivial_destructor<T>;
@@ -103,6 +105,8 @@ namespace experimental{
     // leave it; our metafunctions are already defined.
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it; our metafunctions are already defined.
+# elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
+    // leave it: the user doesn't want it
 # else
 
 
