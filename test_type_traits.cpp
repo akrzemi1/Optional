@@ -10,6 +10,8 @@
 
 # include "optional.hpp"
 
+namespace std { namespace experimental {
+
 struct Val
 {
   Val(){}
@@ -47,16 +49,18 @@ struct VoidNothrowBoth
 };
 
 
-static_assert(std::is_nothrow_move_constructible<Safe>::value, "WTF!");
-static_assert(!std::is_nothrow_move_constructible<Unsafe>::value, "WTF!");
+static_assert(is_nothrow_move_constructible<Safe>::value, "WTF!");
+static_assert(!is_nothrow_move_constructible<Unsafe>::value, "WTF!");
 
-static_assert(std::is_assignable<Safe&, Safe&&>::value, "WTF!");
-static_assert(!std::is_assignable<Val&, Val&&>::value, "WTF!");
+static_assert(is_assignable<Safe&, Safe&&>::value, "WTF!");
+static_assert(!is_assignable<Val&, Val&&>::value, "WTF!");
 
-static_assert(std::is_nothrow_move_assignable<Safe>::value, "WTF!");
-static_assert(!std::is_nothrow_move_assignable<Unsafe>::value, "WTF!");
+static_assert(is_nothrow_move_assignable<Safe>::value, "WTF!");
+static_assert(!is_nothrow_move_assignable<Unsafe>::value, "WTF!");
 
-static_assert(std::is_nothrow_move_constructible<VoidNothrowBoth>::value, "WTF!");
-static_assert(std::is_nothrow_move_assignable<VoidNothrowBoth>::value, "WTF!");
+static_assert(is_nothrow_move_constructible<VoidNothrowBoth>::value, "WTF!");
+static_assert(is_nothrow_move_assignable<VoidNothrowBoth>::value, "WTF!");
+
+}} // namespace std::experimental
 
 int main() { }
