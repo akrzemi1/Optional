@@ -86,6 +86,8 @@
 
 namespace std{
 
+namespace experimental{
+
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
     // leave it: it is already there
@@ -93,7 +95,7 @@ namespace std{
     // leave it: it is already there
 # else
 	template <typename T>
-	using is_trivially_destructible = has_trivial_destructor<T>;
+	using is_trivially_destructible = std::has_trivial_destructor<T>;
 # endif
 // END workaround for missing is_trivially_destructible
 
@@ -146,8 +148,6 @@ struct is_nothrow_move_assignable
 
 # endif   
 
-
-namespace experimental{
 
 
 // 20.5.4, optional for object types
@@ -341,7 +341,7 @@ struct constexpr_optional_base
 
 template <class T> 
 using OptionalBase = typename std::conditional<
-    std::is_trivially_destructible<T>::value, 
+    is_trivially_destructible<T>::value, 
     constexpr_optional_base<T>,
     optional_base<T>
 >::type;
@@ -410,7 +410,7 @@ public:
     }
   }
 
-  optional(optional&& rhs) noexcept(std::is_nothrow_move_constructible<T>::value)
+  optional(optional&& rhs) noexcept(is_nothrow_move_constructible<T>::value)
   : OptionalBase<T>(only_set_initialized, false)
   {
     if (rhs.initialized()) {
@@ -450,7 +450,7 @@ public:
   }
   
   optional& operator=(optional&& rhs) 
-  noexcept(std::is_nothrow_move_assignable<T>::value && std::is_nothrow_move_constructible<T>::value)
+  noexcept(is_nothrow_move_assignable<T>::value && is_nothrow_move_constructible<T>::value)
   {
     if      (initialized() == true  && rhs.initialized() == false) clear();
     else if (initialized() == false && rhs.initialized() == true)  initialize(std::move(*rhs));
