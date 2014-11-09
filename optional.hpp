@@ -82,7 +82,12 @@
 #   define OPTIONAL_HAS_MOVE_ACCESSORS 0
 # endif
 
-
+# // In C++11 constexpr implies const, so we need to make non-const members also non-constexpr
+# if (defined __cplusplus) && (__cplusplus == 201103L)
+#   define OPTIONAL_MUTABLE_CONSTEXPR 
+# else
+#   define OPTIONAL_MUTABLE_CONSTEXPR constexpr
+# endif
 
 namespace std{
 
@@ -366,8 +371,8 @@ class optional : private OptionalBase<T>
 # if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
   constexpr const T& contained_val() const& { return OptionalBase<T>::storage_.value_; }
 #   if OPTIONAL_HAS_MOVE_ACCESSORS == 1
-  constexpr T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
-  constexpr T& contained_val() & { return OptionalBase<T>::storage_.value_; }
+  OPTIONAL_MUTABLE_CONSTEXPR T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
+  OPTIONAL_MUTABLE_CONSTEXPR T& contained_val() & { return OptionalBase<T>::storage_.value_; }
 #   else  
   T& contained_val() & { return OptionalBase<T>::storage_.value_; }
   T&& contained_val() && { return std::move(OptionalBase<T>::storage_.value_); }
@@ -508,7 +513,7 @@ public:
   
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
 
-  constexpr T* operator ->() { 
+  OPTIONAL_MUTABLE_CONSTEXPR T* operator ->() { 
     assert (initialized()); 
     return dataptr(); 
   }
@@ -517,12 +522,12 @@ public:
     return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), contained_val());
   }
   
-  constexpr T& operator *() & { 
+  OPTIONAL_MUTABLE_CONSTEXPR T& operator *() & { 
     assert (initialized()); 
     return contained_val(); 
   }
   
-  constexpr T&& operator *() && { 
+  OPTIONAL_MUTABLE_CONSTEXPR T&& operator *() && { 
     assert (initialized()); 
     return constexpr_move(contained_val()); 
   }
@@ -531,11 +536,11 @@ public:
     return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
-  constexpr T& value() & {
+  OPTIONAL_MUTABLE_CONSTEXPR T& value() & {
     return initialized() ? contained_val() : (throw bad_optional_access("bad optional access"), contained_val());
   }
   
-  constexpr T&& value() && {
+  OPTIONAL_MUTABLE_CONSTEXPR T&& value() && {
     if (!initialized()) throw bad_optional_access("bad optional access");
 	return std::move(contained_val());
   }
@@ -577,7 +582,7 @@ public:
 #   if OPTIONAL_HAS_MOVE_ACCESSORS == 1 
 
   template <class V>
-  constexpr T value_or(V&& v) &&
+  OPTIONAL_MUTABLE_CONSTEXPR T value_or(V&& v) &&
   {
     return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
   }
