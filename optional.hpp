@@ -253,7 +253,7 @@ constexpr struct in_place_t{} in_place{};
 struct nullopt_t
 {
   struct init{};
-  constexpr nullopt_t(init){};
+  constexpr nullopt_t(init){}
 }; 
 constexpr nullopt_t nullopt{nullopt_t::init{}};
 
