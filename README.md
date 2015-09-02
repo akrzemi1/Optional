@@ -33,3 +33,7 @@ Known Issues
  - In libstdc++ versions below 20130531 the constructor taking `initializer_list` argument is not `constexpr`. This is because `initializer_list` operations are not `constexpr` in C++11. This works however in version 20130531. It is also not enabled for libc++ because I do not have access to it and do nto know if it provides `constexpr` `initializer_list`.
  - In G++ 4.7.2 and 4.8.0 member function `value_or` does not have rvalue reference overload. These compilers do not support rvalue overloding on `*this`. 
  - In order for the library to work with slightly older compilers, we emulatesome missin type traits. On some platforms we cannot correctly detect the available features, and attempts at workarounds for missing type trait definitions can cause compile-time errors. Define macro `TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS` if you know that all the necessary type traits are defined, and no emulation is required.
+
+License
+-------
+Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/LICENSE_1_0.txt).
