@@ -140,7 +140,7 @@ struct is_assignable
 template <class T>
 struct is_nothrow_move_assignable
 {
-  template <class X, bool has_any_move_massign>
+  template <class X, bool has_any_move_assign>
   struct has_nothrow_move_assign {
     constexpr static bool value = false;
   };
@@ -715,7 +715,7 @@ public:
 template <class T>
 class optional<T&&>
 {
-  static_assert( sizeof(T) == 0, "optional rvalue referencs disallowed" );
+  static_assert( sizeof(T) == 0, "optional rvalue references disallowed" );
 };
 
 
@@ -876,7 +876,7 @@ template <class T> constexpr bool operator>=(const T& v, const optional<T>& x)
 }
 
 
-// Comparison of optionsl<T&> with T
+// Comparison of optional<T&> with T
 template <class T> constexpr bool operator==(const optional<T&>& x, const T& v)
 {
   return bool(x) ? *x == v : false;
@@ -937,7 +937,7 @@ template <class T> constexpr bool operator>=(const T& v, const optional<T&>& x)
   return bool(x) ? v >= *x : true;
 }
 
-// Comparison of optionsl<T const&> with T
+// Comparison of optional<T const&> with T
 template <class T> constexpr bool operator==(const optional<const T&>& x, const T& v)
 {
   return bool(x) ? *x == v : false;
