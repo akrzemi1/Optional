@@ -127,11 +127,11 @@ template <class T, class U>
 struct is_assignable
 {
   template <class X, class Y>
-  static constexpr bool has_assign(...) { return false; }
+  constexpr static bool has_assign(...) { return false; }
 
   template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
   // the comma operator is necessary for the cases where operator= returns void
-  static constexpr bool has_assign(bool) { return true; }
+  constexpr static bool has_assign(bool) { return true; }
 
   constexpr static bool value = has_assign<T, U>(true);
 };
@@ -207,10 +207,10 @@ template <typename T>
 struct has_overloaded_addressof
 {
   template <class X>
-  static constexpr bool has_overload(...) { return false; }
+  constexpr static bool has_overload(...) { return false; }
   
   template <class X, size_t S = sizeof(std::declval<X&>().operator&()) >
-  static constexpr bool has_overload(bool) { return true; }
+  constexpr static bool has_overload(bool) { return true; }
 
   constexpr static bool value = has_overload<T>(true);
 };
@@ -309,7 +309,7 @@ struct optional_base
 
     constexpr optional_base() noexcept : init_(false), storage_(trivial_init) {};
 
-    constexpr explicit optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
+    explicit constexpr optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
 
     explicit constexpr optional_base(const T& v) : init_(true), storage_(v) {}
 
@@ -334,7 +334,7 @@ struct constexpr_optional_base
 
     constexpr constexpr_optional_base() noexcept : init_(false), storage_(trivial_init) {};
 
-    constexpr explicit constexpr_optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
+    explicit constexpr constexpr_optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
 
     explicit constexpr constexpr_optional_base(const T& v) : init_(true), storage_(v) {}
 
@@ -435,14 +435,14 @@ public:
   constexpr optional(T&& v) : OptionalBase<T>(constexpr_move(v)) {}
 
   template <class... Args>
-  constexpr explicit optional(in_place_t, Args&&... args)
+  explicit constexpr optional(in_place_t, Args&&... args)
   : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
   template <class U, class... Args, TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
   OPTIONAL_CONSTEXPR_INIT_LIST explicit optional(in_place_t, std::initializer_list<U> il, Args&&... args)
   : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
-  // 20.5.4.2 Destructor 
+  // 20.5.4.2, Destructor
   ~optional() = default;
 
   // 20.5.4.3, assignment
@@ -497,7 +497,7 @@ public:
     initialize<U, Args...>(il, std::forward<Args>(args)...);
   }
   
-  // 20.5.4.4 Swap
+  // 20.5.4.4, Swap
   void swap(optional<T>& rhs) noexcept(is_nothrow_move_constructible<T>::value && noexcept(swap(declval<T&>(), declval<T&>())))
   {
     if      (initialized() == true  && rhs.initialized() == false) { rhs.initialize(std::move(**this)); clear(); }
@@ -505,9 +505,9 @@ public:
     else if (initialized() == true  && rhs.initialized() == true)  { using std::swap; swap(**this, *rhs); }
   }
 
-  // 20.5.4.5 Observers 
+  // 20.5.4.5, Observers
   
-  constexpr explicit operator bool() const noexcept { return initialized(); }  
+  explicit constexpr operator bool() const noexcept { return initialized(); }
   
   constexpr T const* operator ->() const {
     return TR2_OPTIONAL_ASSERTED_EXPRESSION(initialized(), dataptr());
@@ -751,7 +751,7 @@ template <class T> constexpr bool operator>=(const optional<T>& x, const optiona
 }
 
 
-// 20.5.9 Comparison with nullopt
+// 20.5.9, Comparison with nullopt
 template <class T> constexpr bool operator==(const optional<T>& x, nullopt_t) noexcept
 {
   return (!x);
@@ -999,7 +999,7 @@ template <class T> constexpr bool operator>=(const T& v, const optional<const T&
 }
 
 
-// 20.5.12 Specialized algorithms 
+// 20.5.12, Specialized algorithms
 template <class T>
 void swap(optional<T>& x, optional<T>& y) noexcept(noexcept(x.swap(y)))
 {
