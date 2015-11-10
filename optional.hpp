@@ -54,6 +54,12 @@
 #     define TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
 #   endif
 # endif
+#
+# if defined _MSC_VER
+#   if (_MSC_VER >= 1900)
+#     define TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
+#   endif
+# endif
 
 # if defined __clang__
 #   if (__clang_major__ > 2) || (__clang_major__ == 2) && (__clang_minor__ >= 9)
@@ -62,6 +68,8 @@
 #     define OPTIONAL_HAS_THIS_RVALUE_REFS 0
 #   endif
 # elif defined TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
+#   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
+# elif defined TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 1
 # else
 #   define OPTIONAL_HAS_THIS_RVALUE_REFS 0
@@ -98,6 +106,8 @@ namespace experimental{
     // leave it: it is already there
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it: it is already there
+# elif defined TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
+    // leave it: it is already there
 # elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
     // leave it: the user doesn't want it
 # else
@@ -110,6 +120,8 @@ namespace experimental{
     // leave it; our metafunctions are already defined.
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
     // leave it; our metafunctions are already defined.
+# elif defined TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
+    // leave it: it is already there
 # elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
     // leave it: the user doesn't want it
 # else
@@ -198,6 +210,8 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
   {
     _assert(expr, file, line);
   }
+#elif defined _MSC_VER
+# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : ([]{assert(!#CHECK);}(), (EXPR)))
 #else
 # error UNSUPPORTED COMPILER
 #endif
@@ -255,9 +269,9 @@ constexpr struct in_place_t{} in_place{};
 struct nullopt_t
 {
   struct init{};
-  constexpr nullopt_t(init){}
+  constexpr explicit nullopt_t(init){}
 };
-constexpr nullopt_t nullopt{nullopt_t::init{}};
+constexpr nullopt_t nullopt{nullopt_t::init()};
 
 
 // 20.5.8, class bad_optional_access
