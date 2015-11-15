@@ -312,9 +312,6 @@ union constexpr_storage_t
 };
 
 
-constexpr struct only_set_initialized_t{} only_set_initialized{};
-
-
 template <class T>
 struct optional_base
 {
@@ -322,8 +319,6 @@ struct optional_base
     storage_t<T> storage_;
 
     constexpr optional_base() noexcept : init_(false), storage_(trivial_init) {};
-
-    explicit constexpr optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
 
     explicit constexpr optional_base(const T& v) : init_(true), storage_(v) {}
 
@@ -347,8 +342,6 @@ struct constexpr_optional_base
     constexpr_storage_t<T> storage_;
 
     constexpr constexpr_optional_base() noexcept : init_(false), storage_(trivial_init) {};
-
-    explicit constexpr constexpr_optional_base(only_set_initialized_t, bool init) noexcept : init_(init), storage_(trivial_init) {};
 
     explicit constexpr constexpr_optional_base(const T& v) : init_(true), storage_(v) {}
 
@@ -427,7 +420,7 @@ public:
   constexpr optional(nullopt_t) noexcept : OptionalBase<T>() {};
 
   optional(const optional& rhs)
-  : OptionalBase<T>(only_set_initialized, false)
+  : OptionalBase<T>()
   {
     if (rhs.initialized()) {
         ::new (static_cast<void*>(dataptr())) T(*rhs);
@@ -436,7 +429,7 @@ public:
   }
 
   optional(optional&& rhs) noexcept(is_nothrow_move_constructible<T>::value)
-  : OptionalBase<T>(only_set_initialized, false)
+  : OptionalBase<T>()
   {
     if (rhs.initialized()) {
         ::new (static_cast<void*>(dataptr())) T(std::move(*rhs));
