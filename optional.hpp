@@ -244,19 +244,6 @@ T* static_addressof(T& ref)
 }
 
 
-
-template <class U>
-struct is_not_optional
-{
-  constexpr static bool value = true;
-};
-
-template <class T>
-struct is_not_optional<optional<T>>
-{
-  constexpr static bool value = false;
-};
-
 namespace detail_
 {
 
