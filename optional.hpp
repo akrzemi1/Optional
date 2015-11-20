@@ -478,7 +478,7 @@ public:
   auto operator=(U&& v)
   -> typename enable_if
   <
-    is_same<typename remove_reference<U>::type, T>::value,
+    is_same<typename decay<U>::type, T>::value,
     optional&
   >::type
   {
