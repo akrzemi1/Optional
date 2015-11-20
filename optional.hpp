@@ -217,6 +217,13 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 #endif
 
 
+
+
+
+namespace detail_
+{
+
+// static_addressof: a constexpr version of addressof
 template <typename T>
 struct has_overloaded_addressof
 {
@@ -228,8 +235,6 @@ struct has_overloaded_addressof
 
   constexpr static bool value = has_overload<T>(true);
 };
-
-
 
 template <typename T, TR2_OPTIONAL_REQUIRES(!has_overloaded_addressof<T>)>
 constexpr T* static_addressof(T& ref)
@@ -243,9 +248,6 @@ T* static_addressof(T& ref)
   return std::addressof(ref);
 }
 
-
-namespace detail_
-{
 
 // the call to convert<A>(b) has return type A and converts b to type A iff b decltype(b) is implicitly convertible to A  
 template <class U>
@@ -371,7 +373,7 @@ class optional : private OptionalBase<T>
 
   constexpr bool initialized() const noexcept { return OptionalBase<T>::init_; }
   T* dataptr() {  return std::addressof(OptionalBase<T>::storage_.value_); }
-  constexpr const T* dataptr() const { return static_addressof(OptionalBase<T>::storage_.value_); }
+  constexpr const T* dataptr() const { return detail_::static_addressof(OptionalBase<T>::storage_.value_); }
   
 # if OPTIONAL_HAS_THIS_RVALUE_REFS == 1
   constexpr const T& contained_val() const& { return OptionalBase<T>::storage_.value_; }
@@ -629,13 +631,13 @@ public:
   
   constexpr optional(nullopt_t) noexcept : ref(nullptr) {}
    
-  constexpr optional(T& v) noexcept : ref(static_addressof(v)) {}
+  constexpr optional(T& v) noexcept : ref(detail_::static_addressof(v)) {}
   
   optional(T&&) = delete;
   
   constexpr optional(const optional& rhs) noexcept : ref(rhs.ref) {}
   
-  explicit constexpr optional(in_place_t, T& v) noexcept : ref(static_addressof(v)) {}
+  explicit constexpr optional(in_place_t, T& v) noexcept : ref(detail_::static_addressof(v)) {}
   
   explicit optional(in_place_t, T&&) = delete;
   
@@ -679,7 +681,7 @@ public:
   = delete;
   
   void emplace(T& v) noexcept {
-    ref = static_addressof(v);
+    ref = detail_::static_addressof(v);
   }
   
   void emplace(T&&) = delete;
