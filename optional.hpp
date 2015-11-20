@@ -257,6 +257,15 @@ struct is_not_optional<optional<T>>
   constexpr static bool value = false;
 };
 
+namespace detail_
+{
+
+// the call to convert<A>(b) has return type A and converts b to type A iff b decltype(b) is implicitly convertible to A  
+template <class U>
+U convert(U v) { return v; }
+  
+} // namespace detail
+
 
 constexpr struct trivial_init_t{} trivial_init{};
 
@@ -585,7 +594,7 @@ public:
   template <class V>
   constexpr T value_or(V&& v) const&
   {
-    return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
+    return *this ? **this : detail_::convert<T>(constexpr_forward<V>(v));
   }
   
 #   if OPTIONAL_HAS_MOVE_ACCESSORS == 1
@@ -593,7 +602,7 @@ public:
   template <class V>
   OPTIONAL_MUTABLE_CONSTEXPR T value_or(V&& v) &&
   {
-    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
+    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : detail_::convert<T>(constexpr_forward<V>(v));
   }
 
 #   else
@@ -601,7 +610,7 @@ public:
   template <class V>
   T value_or(V&& v) &&
   {
-    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : static_cast<T>(constexpr_forward<V>(v));
+    return *this ? constexpr_move(const_cast<optional<T>&>(*this).contained_val()) : detail_::convert<T>(constexpr_forward<V>(v));
   }
   
 #   endif
@@ -611,7 +620,7 @@ public:
   template <class V>
   constexpr T value_or(V&& v) const
   {
-    return *this ? **this : static_cast<T>(constexpr_forward<V>(v));
+    return *this ? **this : detail_::convert<T>(constexpr_forward<V>(v));
   }
 
 # endif
@@ -714,7 +723,7 @@ public:
   template <class V>
   constexpr typename decay<T>::type value_or(V&& v) const
   {
-    return *this ? **this : static_cast<typename decay<T>::type>(constexpr_forward<V>(v));
+    return *this ? **this : detail_::convert<typename decay<T>::type>(constexpr_forward<V>(v));
   }
 };
 
