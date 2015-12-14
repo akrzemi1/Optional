@@ -198,26 +198,9 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 
 #if defined NDEBUG
 # define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
-#elif defined __clang__ || defined __GNU_LIBRARY__
-# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
-  inline void fail(const char* expr, const char* file, int line)
-  {
-    __assert(expr, file, line);
-  }
-#elif defined __GNUC__
-# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : (fail(#CHECK, __FILE__, __LINE__), (EXPR)))
-  inline void fail(const char* expr, const char* file, unsigned line)
-  {
-    _assert(expr, file, line);
-  }
-#elif defined _MSC_VER
-# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : ([]{assert(!#CHECK);}(), (EXPR)))
 #else
-# error UNSUPPORTED COMPILER
+# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : ([]{assert(!#CHECK);}(), (EXPR)))
 #endif
-
-
-
 
 
 namespace detail_
