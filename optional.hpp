@@ -398,6 +398,14 @@ public:
   constexpr optional() noexcept : OptionalBase<T>()  {};
   constexpr optional(nullopt_t) noexcept : OptionalBase<T>() {};
 
+  optional(const optional<T&>& rhs) : optional() {
+    if (rhs) {
+      ::new (static_cast<void*>(dataptr())) T(*rhs);
+      OptionalBase<T>::init_ = true;
+    }
+  }
+
+
   optional(const optional& rhs)
   : OptionalBase<T>()
   {
