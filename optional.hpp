@@ -7,8 +7,8 @@
 // The idea and interface is based on Boost.Optional library
 // authored by Fernando Luis Cacciola Carballal
 
-# ifndef ___OPTIONAL_HPP___
-# define ___OPTIONAL_HPP___
+# ifndef ___SOL2_OPTIONAL_HPP___
+# define ___SOL2_OPTIONAL_HPP___
 
 # include <utility>
 # include <type_traits>
@@ -1045,4 +1045,4 @@ namespace std
 # undef TR2_OPTIONAL_REQUIRES
 # undef TR2_OPTIONAL_ASSERTED_EXPRESSION
 
-# endif //___OPTIONAL_HPP___
+# endif //___SOL2_OPTIONAL_HPP___
