@@ -7,8 +7,8 @@
 // The idea and interface is based on Boost.Optional library
 // authored by Fernando Luis Cacciola Carballal
 
-# ifndef ___SOL_OPTIONAL_HPP___
-# define ___SOL_OPTIONAL_HPP___
+# ifndef ___AK_STD_EXPERIMENTAL_OPTIONAL_HPP___
+# define ___AK_STD_EXPERIMENTAL_OPTIONAL_HPP___
 
 # include <utility>
 # include <type_traits>
@@ -97,7 +97,8 @@
 #   define OPTIONAL_MUTABLE_CONSTEXPR constexpr
 # endif
 
-namespace sol{
+namespace std{
+namespace experimental{
 
 // BEGIN workaround for missing is_trivially_destructible
 # if defined TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
@@ -1015,15 +1016,16 @@ constexpr optional<X&> make_optional(::std::reference_wrapper<X> v)
 }
 
 
-} // namespace 
+} // namespace experimental
+} // namespace std
 
 namespace std
 {
   template <typename T>
-  struct hash<sol::optional<T>>
+  struct hash<::std::experimental::optional<T>>
   {
     typedef typename hash<T>::result_type result_type;
-    typedef sol::optional<T> argument_type;
+    typedef ::std::experimental::optional<T> argument_type;
     
     constexpr result_type operator()(argument_type const& arg) const {
       return arg ? ::std::hash<T>{}(*arg) : result_type{};
@@ -1031,10 +1033,10 @@ namespace std
   };
   
   template <typename T>
-  struct hash<sol::optional<T&>>
+  struct hash<::std::experimental::optional<T&>>
   {
     typedef typename hash<T>::result_type result_type;
-    typedef sol::optional<T&> argument_type;
+    typedef ::std::experimental::optional<T&> argument_type;
     
     constexpr result_type operator()(argument_type const& arg) const {
       return arg ? ::std::hash<T>{}(*arg) : result_type{};
@@ -1045,4 +1047,4 @@ namespace std
 # undef TR2_OPTIONAL_REQUIRES
 # undef TR2_OPTIONAL_ASSERTED_EXPRESSION
 
-# endif //___SOL_OPTIONAL_HPP___
+# endif //___AK_STD_EXPERIMENTAL_OPTIONAL_HPP___
