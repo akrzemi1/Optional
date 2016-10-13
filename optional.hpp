@@ -340,8 +340,8 @@ struct constexpr_optional_base
 
 template <class T>
 using OptionalBase = typename std::conditional<
-    is_trivially_destructible<T>::value,
-    constexpr_optional_base<typename std::remove_const<T>::type>,
+    is_trivially_destructible<T>::value,                          // if possible
+    constexpr_optional_base<typename std::remove_const<T>::type>, // use base with trivial destructor
     optional_base<typename std::remove_const<T>::type>
 >::type;
 
