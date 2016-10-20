@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Andrzej Krzemienski.
+// Copyright (C) 2011 - 2016 Andrzej Krzemienski.
 //
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -1259,6 +1259,23 @@ TEST(exception_safety)
   }
   assert(CountedObject::_counter == 0);
 };
+
+TEST(nested_optional)
+{
+   using namespace std::experimental;
+	
+   optional<optional<optional<int>>> o1 {nullopt};
+   assert (!o1);
+    
+   optional<optional<optional<int>>> o2 {in_place, nullopt};
+   assert (o2);
+   assert (!*o2);
+    
+   optional<optional<optional<int>>> o3 (in_place, in_place, nullopt);
+   assert (o3);
+   assert (*o3);
+   assert (!**o3);
+}
 
 //// constexpr tests
 
