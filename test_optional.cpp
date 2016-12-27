@@ -1275,7 +1275,38 @@ TEST(nested_optional)
    assert (o3);
    assert (*o3);
    assert (!**o3);
-}
+};
+
+TEST(three_ways_of_having_value)
+{
+  using namespace std::experimental;
+  optional<int> oN, o1 (1);
+  
+  assert (!oN);
+  assert (!oN.has_value());
+  assert (oN == nullopt);
+  
+  assert (o1);
+  assert (o1.has_value());
+  assert (o1 != nullopt);
+  
+  assert (bool(oN) == oN.has_value());
+  assert (bool(o1) == o1.has_value());
+  
+  int i = 1;
+  optional<int&> rN, r1 (i);
+  
+  assert (!rN);
+  assert (!rN.has_value());
+  assert (rN == nullopt);
+  
+  assert (r1);
+  assert (r1.has_value());
+  assert (r1 != nullopt);
+  
+  assert (bool(rN) == rN.has_value());
+  assert (bool(r1) == r1.has_value());
+};
 
 //// constexpr tests
 
