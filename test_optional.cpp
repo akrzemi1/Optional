@@ -689,6 +689,19 @@ TEST(value_or)
   assert (os.value_or("BBB") == "BBB");
 };
 
+TEST(reset)
+{
+  using namespace std::experimental;
+  optional<int> oi {1};
+  oi.reset();
+  assert (!oi);
+
+  int i = 1;
+  optional<const int&> oir {i};
+  oir.reset();
+  assert (!oir);
+};
+
 TEST(mixed_order)
 {
   using namespace std::experimental;
