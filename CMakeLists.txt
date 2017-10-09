@@ -30,7 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
     add_library(optional INTERFACE)
     target_include_directories(optional INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
     install(TARGETS optional EXPORT optional-targets)
     install(EXPORT optional-targets DESTINATION lib/cmake/akrzemi1_optional
