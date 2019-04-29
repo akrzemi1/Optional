@@ -4,6 +4,11 @@ enable_testing()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
 
+add_library(optional INTERFACE)
+target_include_directories(optional
+    INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    )
+
 add_executable(test_optional test_optional.cpp)
 add_executable(test_type_traits test_type_traits.cpp)
 
