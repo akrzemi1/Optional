@@ -90,7 +90,7 @@
 #   define OPTIONAL_HAS_MOVE_ACCESSORS 0
 # endif
 
-# // In C++11 constexpr implies const, so we need to make non-const members also non-constexpr
+// In C++11 constexpr implies const, so we need to make non-const members also non-constexpr
 # if (defined __cplusplus) && (__cplusplus == 201103L)
 #   define OPTIONAL_MUTABLE_CONSTEXPR
 # else
