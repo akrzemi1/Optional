@@ -26,13 +26,13 @@
 #   elif (__GNUC__ > 4)
 #     define TR2_OPTIONAL_GCC_4_8_AND_HIGHER___
 #   endif
-#
+
 #   if (__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)
 #     define TR2_OPTIONAL_GCC_4_7_AND_HIGHER___
 #   elif (__GNUC__ > 4)
 #     define TR2_OPTIONAL_GCC_4_7_AND_HIGHER___
 #   endif
-#
+
 #   if (__GNUC__ == 4) && (__GNUC_MINOR__ == 8) && (__GNUC_PATCHLEVEL__ >= 1)
 #     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   elif (__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)
@@ -41,7 +41,7 @@
 #     define TR2_OPTIONAL_GCC_4_8_1_AND_HIGHER___
 #   endif
 # endif
-#
+
 # if defined __clang_major__
 #   if (__clang_major__ == 3 && __clang_minor__ >= 5)
 #     define TR2_OPTIONAL_CLANG_3_5_AND_HIGHTER_
@@ -54,7 +54,7 @@
 #     define TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
 #   endif
 # endif
-#
+
 # if defined _MSC_VER
 #   if (_MSC_VER >= 1900)
 #     define TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
